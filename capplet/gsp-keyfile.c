@@ -25,93 +25,76 @@
  *        Vincent Untz <vuntz@gnome.org>
  */
 
-#include <string.h>
-
-#include <glib.h>
-
 #include "gsp-keyfile.h"
 
-void
-gsp_key_file_populate (GKeyFile *keyfile)
-{
-        gsp_key_file_set_string (keyfile,
-                                 G_KEY_FILE_DESKTOP_KEY_TYPE,
-                                 "Application");
+#include <glib.h>
+#include <string.h>
 
-        gsp_key_file_set_string (keyfile,
-                                 G_KEY_FILE_DESKTOP_KEY_EXEC,
-                                 "/bin/false");
+void gsp_key_file_populate(GKeyFile *keyfile) {
+  gsp_key_file_set_string(keyfile, G_KEY_FILE_DESKTOP_KEY_TYPE, "Application");
+
+  gsp_key_file_set_string(keyfile, G_KEY_FILE_DESKTOP_KEY_EXEC, "/bin/false");
 }
 
-gboolean
-gsp_key_file_get_boolean (GKeyFile    *keyfile,
-                          const gchar *key,
-                          gboolean     default_value)
-{
-        GError   *error;
-        gboolean  retval;
+gboolean gsp_key_file_get_boolean(GKeyFile *keyfile, const gchar *key,
+                                  gboolean default_value) {
+  GError *error;
+  gboolean retval;
 
-        error = NULL;
-        retval = g_key_file_get_boolean (keyfile, G_KEY_FILE_DESKTOP_GROUP,
-                                         key, &error);
-        if (error != NULL) {
-                retval = default_value;
-                g_error_free (error);
-        }
+  error = NULL;
+  retval =
+      g_key_file_get_boolean(keyfile, G_KEY_FILE_DESKTOP_GROUP, key, &error);
+  if (error != NULL) {
+    retval = default_value;
+    g_error_free(error);
+  }
 
-        return retval;
+  return retval;
 }
 
-void
-gsp_key_file_set_locale_string (GKeyFile    *keyfile,
-                                const gchar *key,
-                                const gchar *value)
-{
-        const char         *locale;
-        const char * const *langs_pointer;
-        int                 i;
+void gsp_key_file_set_locale_string(GKeyFile *keyfile, const gchar *key,
+                                    const gchar *value) {
+  const char *locale;
+  const char *const *langs_pointer;
+  int i;
 
-        if (value == NULL) {
-                value = "";
-        }
+  if (value == NULL) {
+    value = "";
+  }
 
-        locale = NULL;
-        langs_pointer = g_get_language_names ();
-        for (i = 0; langs_pointer[i] != NULL; i++) {
-                /* find first without encoding  */
-                if (strchr (langs_pointer[i], '.') == NULL) {
-                        locale = langs_pointer[i];
-                        break;
-                }
-        }
+  locale = NULL;
+  langs_pointer = g_get_language_names();
+  for (i = 0; langs_pointer[i] != NULL; i++) {
+    /* find first without encoding  */
+    if (strchr(langs_pointer[i], '.') == NULL) {
+      locale = langs_pointer[i];
+      break;
+    }
+  }
 
-        if (locale != NULL) {
-                g_key_file_set_locale_string (keyfile, G_KEY_FILE_DESKTOP_GROUP,
-                                              key, locale, value);
-        } else {
-                g_key_file_set_string (keyfile, G_KEY_FILE_DESKTOP_GROUP,
-                                       key, value);
-        }
+  if (locale != NULL) {
+    g_key_file_set_locale_string(keyfile, G_KEY_FILE_DESKTOP_GROUP, key, locale,
+                                 value);
+  } else {
+    g_key_file_set_string(keyfile, G_KEY_FILE_DESKTOP_GROUP, key, value);
+  }
 }
 
-void
-gsp_key_file_ensure_C_key (GKeyFile   *keyfile,
-                           const char *key)
-{
-        char *C_value;
-        char *buffer;
+void gsp_key_file_ensure_C_key(GKeyFile *keyfile, const char *key) {
+  char *C_value;
+  char *buffer;
 
-        /* Make sure we set the "C" locale strings to the terms we set here.
-         * This is so that if the user logs into another locale they get their
-         * own description there rather then empty. It is not the C locale
-         * however, but the user created this entry herself so it's OK */
-        C_value = gsp_key_file_get_string (keyfile, key);
-        if (C_value == NULL || C_value [0] == '\0') {
-                buffer = gsp_key_file_get_locale_string (keyfile, key);
-                if (buffer) {
-                        gsp_key_file_set_string (keyfile, key, buffer);
-                        g_free (buffer);
-                }
-        }
-        g_free (C_value);
+  /* Make sure we set the "C" locale strings to the terms we set here.
+   * This is so that if the user logs into another locale they get their
+   * own description there rather then empty. It is not the C locale
+   * however, but the user created this entry herself so it's OK */
+  C_value = gsp_key_file_get_string(keyfile, key);
+  if (C_value == NULL || C_value[0] == '\0') {
+    buffer = gsp_key_file_get_locale_string(keyfile, key);
+    if (buffer) {
+      gsp_key_file_set_string(keyfile, key, buffer);
+      g_free(buffer);
+    }
+  }
+  g_free(C_value);
 }

@@ -20,251 +20,203 @@
  *
  */
 
-#include "config.h"
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
 
-#include <stdlib.h>
+#include <gio/gio.h>
+#include <glib.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
 
-#include <glib.h>
-#include <gio/gio.h>
-
-#define SM_DBUS_NAME      "org.gnome.SessionManager"
-#define SM_DBUS_PATH      "/org/gnome/SessionManager"
+#define SM_DBUS_NAME "org.gnome.SessionManager"
+#define SM_DBUS_PATH "/org/gnome/SessionManager"
 #define SM_DBUS_INTERFACE "org.gnome.SessionManager"
 
 #define SM_CLIENT_DBUS_INTERFACE "org.gnome.SessionManager.ClientPrivate"
 
 static GDBusConnection *bus_connection = NULL;
-static GDBusProxy      *sm_proxy = NULL;
-static char            *client_id = NULL;
-static GDBusProxy      *client_proxy = NULL;
-static GMainLoop       *main_loop = NULL;
+static GDBusProxy *sm_proxy = NULL;
+static char *client_id = NULL;
+static GDBusProxy *client_proxy = NULL;
+static GMainLoop *main_loop = NULL;
 
-static gboolean
-session_manager_connect (void)
-{
+static gboolean session_manager_connect(void) {
+  if (bus_connection == NULL) {
+    GError *error;
 
-        if (bus_connection == NULL) {
-                GError *error;
+    error = NULL;
+    bus_connection = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, &error);
+    if (bus_connection == NULL) {
+      g_message("Failed to connect to the session bus: %s", error->message);
+      g_error_free(error);
+      exit(1);
+    }
+  }
 
-                error = NULL;
-                bus_connection = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &error);
-                if (bus_connection == NULL) {
-                        g_message ("Failed to connect to the session bus: %s",
-                                   error->message);
-                        g_error_free (error);
-                        exit (1);
-                }
-        }
-
-        sm_proxy = g_dbus_proxy_new_sync (bus_connection,
-                                          G_DBUS_PROXY_FLAGS_NONE,
-                                          NULL,
-                                          SM_DBUS_NAME,
-                                          SM_DBUS_PATH,
-                                          SM_DBUS_INTERFACE,
-                                          NULL,
-                                          NULL);
-        return (sm_proxy != NULL);
+  sm_proxy = g_dbus_proxy_new_sync(bus_connection, G_DBUS_PROXY_FLAGS_NONE,
+                                   NULL, SM_DBUS_NAME, SM_DBUS_PATH,
+                                   SM_DBUS_INTERFACE, NULL, NULL);
+  return (sm_proxy != NULL);
 }
 
-static void
-on_client_query_end_session (GDBusProxy     *proxy,
-                             GVariant   *parameters)
-{
-        GError     *error;
-        gboolean    is_ok;
-        GVariant   *res;
-        guint       flags;
-        const char *reason;
+static void on_client_query_end_session(GDBusProxy *proxy,
+                                        GVariant *parameters) {
+  GError *error;
+  gboolean is_ok;
+  GVariant *res;
+  guint flags;
+  const char *reason;
 
-        is_ok = FALSE;
-        reason = "Unsaved files";
-        g_variant_get (parameters, "(u)", &flags);
+  is_ok = FALSE;
+  reason = "Unsaved files";
+  g_variant_get(parameters, "(u)", &flags);
 
-        g_debug ("Got query end session signal flags=%u", flags);
+  g_debug("Got query end session signal flags=%u", flags);
 
-        error = NULL;
-        res = g_dbus_proxy_call_sync (proxy,
-                                      "EndSessionResponse",
-                                      g_variant_new ("(bs)",
-                                                     is_ok,
-                                                     reason),
-                                      G_DBUS_CALL_FLAGS_NONE,
-                                      -1,
-                                      NULL,
-                                      &error);
-        if (res == NULL) {
-                g_warning ("Failed to respond to EndSession: %s", error->message);
-                g_error_free (error);
-        } else {
-                g_variant_unref (res);
-        }
+  error = NULL;
+  res = g_dbus_proxy_call_sync(proxy, "EndSessionResponse",
+                               g_variant_new("(bs)", is_ok, reason),
+                               G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+  if (res == NULL) {
+    g_warning("Failed to respond to EndSession: %s", error->message);
+    g_error_free(error);
+  } else {
+    g_variant_unref(res);
+  }
 }
 
-static void
-on_client_end_session (GVariant *parameters)
-{
-        guint flags;
-        g_variant_get (parameters, "(u)", &flags);
-        g_debug ("Got end session signal flags=%u", flags);
+static void on_client_end_session(GVariant *parameters) {
+  guint flags;
+  g_variant_get(parameters, "(u)", &flags);
+  g_debug("Got end session signal flags=%u", flags);
 }
 
-static void
-on_client_cancel_end_session (void)
-{
-        g_debug ("Got end session cancelled signal");
+static void on_client_cancel_end_session(void) {
+  g_debug("Got end session cancelled signal");
 }
 
-static void
-on_client_stop (void)
-{
-        g_debug ("Got client stop signal");
-        g_main_loop_quit (main_loop);
+static void on_client_stop(void) {
+  g_debug("Got client stop signal");
+  g_main_loop_quit(main_loop);
 }
 
-static void
-on_client_dbus_signal (GDBusProxy  *proxy,
-                       gchar       *sender_name,
-                       gchar       *signal_name,
-                       GVariant    *parameters,
-                       gpointer     user_data)
-{
-        if (g_strcmp0 (signal_name, "Stop") == 0) {
-                on_client_stop ();
-        } else if (g_strcmp0 (signal_name, "CancelEndSession") == 0) {
-                on_client_cancel_end_session ();
-        } else if (g_strcmp0 (signal_name, "EndSession") == 0) {
-                on_client_end_session (parameters);
-        } else if (g_strcmp0 (signal_name, "QueryEndSession") == 0) {
-                on_client_query_end_session (proxy, parameters);
-        }
+static void on_client_dbus_signal(GDBusProxy *proxy, gchar *sender_name,
+                                  gchar *signal_name, GVariant *parameters,
+                                  gpointer user_data) {
+  if (g_strcmp0(signal_name, "Stop") == 0) {
+    on_client_stop();
+  } else if (g_strcmp0(signal_name, "CancelEndSession") == 0) {
+    on_client_cancel_end_session();
+  } else if (g_strcmp0(signal_name, "EndSession") == 0) {
+    on_client_end_session(parameters);
+  } else if (g_strcmp0(signal_name, "QueryEndSession") == 0) {
+    on_client_query_end_session(proxy, parameters);
+  }
 }
 
-static gboolean
-register_client (void)
-{
-        GError     *error;
-        GVariant   *res;
-        const char *startup_id;
-        const char *app_id;
+static gboolean register_client(void) {
+  GError *error;
+  GVariant *res;
+  const char *startup_id;
+  const char *app_id;
 
-        startup_id = g_getenv ("DESKTOP_AUTOSTART_ID");
-        if (!startup_id) {
-                startup_id = "";
-        }
-        app_id = "gedit";
+  startup_id = g_getenv("DESKTOP_AUTOSTART_ID");
+  if (!startup_id) {
+    startup_id = "";
+  }
+  app_id = "gedit";
 
-        error = NULL;
-        res = g_dbus_proxy_call_sync (sm_proxy,
-                                      "RegisterClient",
-                                      g_variant_new ("(ss)",
-                                                     app_id,
-                                                     startup_id),
-                                      G_DBUS_CALL_FLAGS_NONE,
-                                      -1,
-                                      NULL,
-                                      &error);
-        if (res == NULL) {
-                g_warning ("Failed to register client: %s", error->message);
-                g_error_free (error);
-                return FALSE;
-        }
+  error = NULL;
+  res = g_dbus_proxy_call_sync(sm_proxy, "RegisterClient",
+                               g_variant_new("(ss)", app_id, startup_id),
+                               G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+  if (res == NULL) {
+    g_warning("Failed to register client: %s", error->message);
+    g_error_free(error);
+    return FALSE;
+  }
 
-        g_variant_get (res, "(o)", &client_id);
-        g_debug ("Client registered with session manager: %s", client_id);
+  g_variant_get(res, "(o)", &client_id);
+  g_debug("Client registered with session manager: %s", client_id);
 
-        client_proxy = g_dbus_proxy_new_sync (bus_connection,
-                                              G_DBUS_PROXY_FLAGS_NONE,
-                                              NULL,
-                                              SM_DBUS_NAME,
-                                              client_id,
-                                              SM_CLIENT_DBUS_INTERFACE,
-                                              NULL, NULL);
-        if (client_proxy != NULL) {
-                g_signal_connect (client_proxy, "g-signal",
-                                  G_CALLBACK (on_client_dbus_signal), NULL);
-        }
+  client_proxy = g_dbus_proxy_new_sync(bus_connection, G_DBUS_PROXY_FLAGS_NONE,
+                                       NULL, SM_DBUS_NAME, client_id,
+                                       SM_CLIENT_DBUS_INTERFACE, NULL, NULL);
+  if (client_proxy != NULL) {
+    g_signal_connect(client_proxy, "g-signal",
+                     G_CALLBACK(on_client_dbus_signal), NULL);
+  }
 
-        g_variant_unref (res);
+  g_variant_unref(res);
 
-        return (client_proxy != NULL);
+  return (client_proxy != NULL);
 }
 
-static gboolean
-session_manager_disconnect (void)
-{
-        if (sm_proxy != NULL) {
-                g_object_unref (sm_proxy);
-                sm_proxy = NULL;
-        }
+static gboolean session_manager_disconnect(void) {
+  if (sm_proxy != NULL) {
+    g_object_unref(sm_proxy);
+    sm_proxy = NULL;
+  }
 
-        return TRUE;
+  return TRUE;
 }
 
-static gboolean
-unregister_client (void)
-{
-        GError  *error;
-        GVariant *res;
+static gboolean unregister_client(void) {
+  GError *error;
+  GVariant *res;
 
-        error = NULL;
-        res = g_dbus_proxy_call_sync (sm_proxy,
-                                      "UnregisterClient",
-                                      g_variant_new ("(o)", client_id),
-                                      G_DBUS_CALL_FLAGS_NONE,
-                                      -1, NULL, &error);
-        if (res == NULL) {
-                g_warning ("Failed to unregister client: %s", error->message);
-                g_error_free (error);
-                return FALSE;
-        }
+  error = NULL;
+  res = g_dbus_proxy_call_sync(sm_proxy, "UnregisterClient",
+                               g_variant_new("(o)", client_id),
+                               G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+  if (res == NULL) {
+    g_warning("Failed to unregister client: %s", error->message);
+    g_error_free(error);
+    return FALSE;
+  }
 
-        g_free (client_id);
-        client_id = NULL;
+  g_free(client_id);
+  client_id = NULL;
 
-        g_variant_unref (res);
+  g_variant_unref(res);
 
-        return TRUE;
+  return TRUE;
 }
 
-static gboolean
-quit_test (gpointer data)
-{
-        g_main_loop_quit (main_loop);
-        return FALSE;
+static gboolean quit_test(gpointer data) {
+  g_main_loop_quit(main_loop);
+  return FALSE;
 }
 
-int
-main (int   argc,
-      char *argv[])
-{
-        gboolean res;
+int main(int argc, char *argv[]) {
+  gboolean res;
 
-        g_log_set_always_fatal (G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL | G_LOG_LEVEL_WARNING);
+  g_log_set_always_fatal(G_LOG_LEVEL_ERROR | G_LOG_LEVEL_CRITICAL |
+                         G_LOG_LEVEL_WARNING);
 
-        res = session_manager_connect ();
-        if (! res) {
-                g_warning ("Unable to connect to session manager");
-                exit (1);
-        }
+  res = session_manager_connect();
+  if (!res) {
+    g_warning("Unable to connect to session manager");
+    exit(1);
+  }
 
-        res = register_client ();
-        if (! res) {
-                g_warning ("Unable to register client with session manager");
-        }
+  res = register_client();
+  if (!res) {
+    g_warning("Unable to register client with session manager");
+  }
 
-        main_loop = g_main_loop_new (NULL, FALSE);
+  main_loop = g_main_loop_new(NULL, FALSE);
 
-        g_timeout_add_seconds (30, quit_test, NULL);
+  g_timeout_add_seconds(30, quit_test, NULL);
 
-        g_main_loop_run (main_loop);
-        g_main_loop_unref (main_loop);
+  g_main_loop_run(main_loop);
+  g_main_loop_unref(main_loop);
 
-        unregister_client ();
-        session_manager_disconnect ();
+  unregister_client();
+  session_manager_disconnect();
 
-        return 0;
+  return 0;
 }

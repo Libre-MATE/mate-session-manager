@@ -26,38 +26,33 @@
 #define __GSP_APP_MANAGER_H
 
 #include <glib-object.h>
-
 #include <gsp-app.h>
 
 G_BEGIN_DECLS
 
-#define GSP_TYPE_APP_MANAGER            (gsp_app_manager_get_type ())
-G_DECLARE_DERIVABLE_TYPE (GspAppManager, gsp_app_manager, GSP, APP_MANAGER, GObject)
+#define GSP_TYPE_APP_MANAGER (gsp_app_manager_get_type())
+G_DECLARE_DERIVABLE_TYPE(GspAppManager, gsp_app_manager, GSP, APP_MANAGER,
+                         GObject)
 
-struct _GspAppManagerClass
-{
-        GObjectClass parent_class;
+struct _GspAppManagerClass {
+  GObjectClass parent_class;
 
-        void (* added)   (GspAppManager *manager,
-                          GspApp        *app);
-        void (* removed) (GspAppManager *manager,
-                          GspApp        *app);
+  void (*added)(GspAppManager *manager, GspApp *app);
+  void (*removed)(GspAppManager *manager, GspApp *app);
 };
 
-GspAppManager  *gsp_app_manager_get                    (void);
+GspAppManager *gsp_app_manager_get(void);
 
-void            gsp_app_manager_fill                   (GspAppManager *manager);
+void gsp_app_manager_fill(GspAppManager *manager);
 
-GSList         *gsp_app_manager_get_apps               (GspAppManager *manager);
+GSList *gsp_app_manager_get_apps(GspAppManager *manager);
 
-GspApp         *gsp_app_manager_find_app_with_basename (GspAppManager *manager,
-                                                        const char    *basename);
+GspApp *gsp_app_manager_find_app_with_basename(GspAppManager *manager,
+                                               const char *basename);
 
-const char     *gsp_app_manager_get_dir                (GspAppManager *manager,
-                                                        unsigned int   index);
+const char *gsp_app_manager_get_dir(GspAppManager *manager, unsigned int index);
 
-void            gsp_app_manager_add                    (GspAppManager *manager,
-                                                        GspApp        *app);
+void gsp_app_manager_add(GspAppManager *manager, GspApp *app);
 
 G_END_DECLS
 

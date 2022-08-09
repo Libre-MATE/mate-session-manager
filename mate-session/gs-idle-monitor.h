@@ -28,24 +28,21 @@
 
 G_BEGIN_DECLS
 
-#define GS_TYPE_IDLE_MONITOR         (gs_idle_monitor_get_type ())
-G_DECLARE_FINAL_TYPE (GSIdleMonitor, gs_idle_monitor, GS, IDLE_MONITOR, GObject)
+#define GS_TYPE_IDLE_MONITOR (gs_idle_monitor_get_type())
+G_DECLARE_FINAL_TYPE(GSIdleMonitor, gs_idle_monitor, GS, IDLE_MONITOR, GObject)
 
-typedef gboolean (*GSIdleMonitorWatchFunc) (GSIdleMonitor *monitor,
-                                            guint          id,
-                                            gboolean       condition,
-                                            gpointer       user_data);
+typedef gboolean (*GSIdleMonitorWatchFunc)(GSIdleMonitor *monitor, guint id,
+                                           gboolean condition,
+                                           gpointer user_data);
 
-GSIdleMonitor * gs_idle_monitor_new            (void);
+GSIdleMonitor *gs_idle_monitor_new(void);
 
-guint           gs_idle_monitor_add_watch      (GSIdleMonitor         *monitor,
-                                                guint                  interval,
-                                                GSIdleMonitorWatchFunc callback,
-                                                gpointer               user_data);
+guint gs_idle_monitor_add_watch(GSIdleMonitor *monitor, guint interval,
+                                GSIdleMonitorWatchFunc callback,
+                                gpointer user_data);
 
-void            gs_idle_monitor_remove_watch   (GSIdleMonitor         *monitor,
-                                                guint                  id);
-void            gs_idle_monitor_reset          (GSIdleMonitor         *monitor);
+void gs_idle_monitor_remove_watch(GSIdleMonitor *monitor, guint id);
+void gs_idle_monitor_reset(GSIdleMonitor *monitor);
 
 G_END_DECLS
 

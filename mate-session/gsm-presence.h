@@ -27,53 +27,44 @@
 
 G_BEGIN_DECLS
 
-#define GSM_TYPE_PRESENCE            (gsm_presence_get_type ())
-G_DECLARE_DERIVABLE_TYPE (GsmPresence, gsm_presence, GSM, PRESENCE, GObject)
+#define GSM_TYPE_PRESENCE (gsm_presence_get_type())
+G_DECLARE_DERIVABLE_TYPE(GsmPresence, gsm_presence, GSM, PRESENCE, GObject)
 
-struct _GsmPresenceClass
-{
-        GObjectClass parent_class;
+struct _GsmPresenceClass {
+  GObjectClass parent_class;
 
-        void          (* status_changed)        (GsmPresence     *presence,
-                                                 guint            status);
-        void          (* status_text_changed)   (GsmPresence     *presence,
-                                                 const char      *status_text);
-
+  void (*status_changed)(GsmPresence *presence, guint status);
+  void (*status_text_changed)(GsmPresence *presence, const char *status_text);
 };
 
 typedef enum {
-        GSM_PRESENCE_STATUS_AVAILABLE = 0,
-        GSM_PRESENCE_STATUS_INVISIBLE,
-        GSM_PRESENCE_STATUS_BUSY,
-        GSM_PRESENCE_STATUS_IDLE,
+  GSM_PRESENCE_STATUS_AVAILABLE = 0,
+  GSM_PRESENCE_STATUS_INVISIBLE,
+  GSM_PRESENCE_STATUS_BUSY,
+  GSM_PRESENCE_STATUS_IDLE,
 } GsmPresenceStatus;
 
-typedef enum
-{
-        GSM_PRESENCE_ERROR_GENERAL = 0,
-        GSM_PRESENCE_NUM_ERRORS
+typedef enum {
+  GSM_PRESENCE_ERROR_GENERAL = 0,
+  GSM_PRESENCE_NUM_ERRORS
 } GsmPresenceError;
 
-#define GSM_PRESENCE_ERROR gsm_presence_error_quark ()
-GType          gsm_presence_error_get_type       (void);
-#define GSM_PRESENCE_TYPE_ERROR (gsm_presence_error_get_type ())
+#define GSM_PRESENCE_ERROR gsm_presence_error_quark()
+GType gsm_presence_error_get_type(void);
+#define GSM_PRESENCE_TYPE_ERROR (gsm_presence_error_get_type())
 
-GQuark         gsm_presence_error_quark          (void);
+GQuark gsm_presence_error_quark(void);
 
-GsmPresence *  gsm_presence_new                  (void);
+GsmPresence *gsm_presence_new(void);
 
-void           gsm_presence_set_idle_enabled     (GsmPresence  *presence,
-                                                  gboolean      enabled);
-void           gsm_presence_set_idle_timeout     (GsmPresence  *presence,
-                                                  guint         n_seconds);
+void gsm_presence_set_idle_enabled(GsmPresence *presence, gboolean enabled);
+void gsm_presence_set_idle_timeout(GsmPresence *presence, guint n_seconds);
 
 /* exported to bus */
-gboolean       gsm_presence_set_status           (GsmPresence  *presence,
-                                                  guint         status,
-                                                  GError      **error);
-gboolean       gsm_presence_set_status_text      (GsmPresence  *presence,
-                                                  const char   *status_text,
-                                                  GError      **error);
+gboolean gsm_presence_set_status(GsmPresence *presence, guint status,
+                                 GError **error);
+gboolean gsm_presence_set_status_text(GsmPresence *presence,
+                                      const char *status_text, GError **error);
 
 G_END_DECLS
 

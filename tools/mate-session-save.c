@@ -21,15 +21,16 @@
    02110-1301, USA.
 */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
-
-#include <unistd.h>
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#endif
 
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
 
 #define GSM_SERVICE_DBUS "org.gnome.SessionManager"
 #define GSM_PATH_DBUS "/org/gnome/SessionManager"
@@ -40,9 +41,9 @@
 #define GSM_INTERFACE_DBUS_OLD "org.mate.SessionManager"
 
 enum {
-	GSM_LOGOUT_MODE_NORMAL = 0,
-	GSM_LOGOUT_MODE_NO_CONFIRMATION,
-	GSM_LOGOUT_MODE_FORCE
+  GSM_LOGOUT_MODE_NORMAL = 0,
+  GSM_LOGOUT_MODE_NO_CONFIRMATION,
+  GSM_LOGOUT_MODE_FORCE
 };
 
 /* True if killing. This is deprecated, but we keep it for compatibility
@@ -64,224 +65,179 @@ static gboolean no_interaction = FALSE;
 static char* session_name = NULL;
 
 static GOptionEntry options[] = {
-	{"logout", '\0', 0, G_OPTION_ARG_NONE, &logout, N_("Log out"), NULL},
-	{"force-logout", '\0', 0, G_OPTION_ARG_NONE, &force_logout, N_("Log out, ignoring any existing inhibitors"), NULL},
-	{"logout-dialog", '\0', 0, G_OPTION_ARG_NONE, &logout_dialog, N_("Show logout dialog"), NULL},
-	{"shutdown-dialog", '\0', 0, G_OPTION_ARG_NONE, &shutdown_dialog, N_("Show shutdown dialog"), NULL},
-	{"gui",  '\0', 0, G_OPTION_ARG_NONE, &show_error_dialogs, N_("Use dialog boxes for errors"), NULL},
-	/* deprecated options */
-	{"session-name", 's', G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING, &session_name, N_("Set the current session name"), N_("NAME")},
-	{"kill", '\0', G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &kill_session, N_("Kill session"), NULL},
-	{"silent", '\0', G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &no_interaction, N_("Do not require confirmation"), NULL},
-	{NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL}
-};
+    {"logout", '\0', 0, G_OPTION_ARG_NONE, &logout, N_("Log out"), NULL},
+    {"force-logout", '\0', 0, G_OPTION_ARG_NONE, &force_logout,
+     N_("Log out, ignoring any existing inhibitors"), NULL},
+    {"logout-dialog", '\0', 0, G_OPTION_ARG_NONE, &logout_dialog,
+     N_("Show logout dialog"), NULL},
+    {"shutdown-dialog", '\0', 0, G_OPTION_ARG_NONE, &shutdown_dialog,
+     N_("Show shutdown dialog"), NULL},
+    {"gui", '\0', 0, G_OPTION_ARG_NONE, &show_error_dialogs,
+     N_("Use dialog boxes for errors"), NULL},
+    /* deprecated options */
+    {"session-name", 's', G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_STRING,
+     &session_name, N_("Set the current session name"), N_("NAME")},
+    {"kill", '\0', G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &kill_session,
+     N_("Kill session"), NULL},
+    {"silent", '\0', G_OPTION_FLAG_HIDDEN, G_OPTION_ARG_NONE, &no_interaction,
+     N_("Do not require confirmation"), NULL},
+    {NULL, 0, 0, G_OPTION_ARG_NONE, NULL, NULL, NULL}};
 
-static void display_error(const char* message)
-{
-	if (show_error_dialogs && !no_interaction)
-	{
-		GtkWidget* dialog = gtk_message_dialog_new(NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
+static void display_error(const char* message) {
+  if (show_error_dialogs && !no_interaction) {
+    GtkWidget* dialog = gtk_message_dialog_new(
+        NULL, 0, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", message);
 
-		gtk_window_set_default_icon_name ("dialog-error");
+    gtk_window_set_default_icon_name("dialog-error");
 
-		gtk_dialog_run(GTK_DIALOG(dialog));
-		gtk_widget_destroy(dialog);
-	}
-	else
-	{
-		g_printerr("%s\n", message);
-	}
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
+  } else {
+    g_printerr("%s\n", message);
+  }
 }
 
-static GDBusProxy* get_sm_proxy(void)
-{
-	GError *error = NULL;
-	GDBusProxy *sm_proxy = NULL;
+static GDBusProxy* get_sm_proxy(void) {
+  GError* error = NULL;
+  GDBusProxy* sm_proxy = NULL;
 
-	sm_proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
-	                                          G_DBUS_PROXY_FLAGS_NONE,
-	                                          NULL,
-	                                          GSM_SERVICE_DBUS,
-	                                          GSM_PATH_DBUS,
-	                                          GSM_INTERFACE_DBUS,
-	                                          NULL,
-	                                          &error);
-	if (sm_proxy == NULL)
-	{
-		g_warning ("Couldn't create DBus proxy: %s", error->message);
-		g_error_free (error);
+  sm_proxy = g_dbus_proxy_new_for_bus_sync(
+      G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE, NULL, GSM_SERVICE_DBUS,
+      GSM_PATH_DBUS, GSM_INTERFACE_DBUS, NULL, &error);
+  if (sm_proxy == NULL) {
+    g_warning("Couldn't create DBus proxy: %s", error->message);
+    g_error_free(error);
 
-		/* Try the old name - for the case when we've just upgraded from 1.10
-		 * so the old m-s-m is currently running */
-		sm_proxy = g_dbus_proxy_new_for_bus_sync (G_BUS_TYPE_SESSION,
-		                                          G_DBUS_PROXY_FLAGS_NONE,
-		                                          NULL,
-		                                          GSM_SERVICE_DBUS_OLD,
-		                                          GSM_PATH_DBUS_OLD,
-		                                          GSM_INTERFACE_DBUS_OLD,
-		                                          NULL,
-		                                          NULL);
-		if (sm_proxy == NULL)
-		{
-			/* Okay, it wasn't the upgrade case, so now we can give up. */
-			display_error (_("Could not connect to the session manager"));
-			return NULL;
-		}
-	}
+    /* Try the old name - for the case when we've just upgraded from 1.10
+     * so the old m-s-m is currently running */
+    sm_proxy = g_dbus_proxy_new_for_bus_sync(
+        G_BUS_TYPE_SESSION, G_DBUS_PROXY_FLAGS_NONE, NULL, GSM_SERVICE_DBUS_OLD,
+        GSM_PATH_DBUS_OLD, GSM_INTERFACE_DBUS_OLD, NULL, NULL);
+    if (sm_proxy == NULL) {
+      /* Okay, it wasn't the upgrade case, so now we can give up. */
+      display_error(_("Could not connect to the session manager"));
+      return NULL;
+    }
+  }
 
-	return sm_proxy;
+  return sm_proxy;
 }
 
-static void do_logout(unsigned int mode)
-{
-	GDBusProxy* sm_proxy;
-	GError* error;
-	GVariant *ret;
+static void do_logout(unsigned int mode) {
+  GDBusProxy* sm_proxy;
+  GError* error;
+  GVariant* ret;
 
-	sm_proxy = get_sm_proxy ();
+  sm_proxy = get_sm_proxy();
 
-	if (sm_proxy == NULL)
-	{
-		return;
-	}
+  if (sm_proxy == NULL) {
+    return;
+  }
 
-	error = NULL;
-	ret = g_dbus_proxy_call_sync (sm_proxy, "Logout",
-	                              g_variant_new ("(u)", mode),
-	                              G_DBUS_CALL_FLAGS_NONE,
-	                              -1,
-	                              NULL,
-	                              &error);
+  error = NULL;
+  ret = g_dbus_proxy_call_sync(sm_proxy, "Logout", g_variant_new("(u)", mode),
+                               G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
 
-	if (ret == NULL)
-	{
-		g_warning ("Failed to call logout: %s", error->message);
-		g_error_free (error);
-	} else {
-		g_variant_unref (ret);
-	}
+  if (ret == NULL) {
+    g_warning("Failed to call logout: %s", error->message);
+    g_error_free(error);
+  } else {
+    g_variant_unref(ret);
+  }
 
-	if (sm_proxy != NULL)
-	{
-		g_object_unref (sm_proxy);
-	}
+  if (sm_proxy != NULL) {
+    g_object_unref(sm_proxy);
+  }
 }
 
-static void do_shutdown_dialog(void)
-{
-	GDBusProxy* sm_proxy;
-	GError* error;
-	GVariant *ret;
+static void do_shutdown_dialog(void) {
+  GDBusProxy* sm_proxy;
+  GError* error;
+  GVariant* ret;
 
-	sm_proxy = get_sm_proxy ();
+  sm_proxy = get_sm_proxy();
 
-	if (sm_proxy == NULL)
-	{
-		return;
-	}
+  if (sm_proxy == NULL) {
+    return;
+  }
 
-	error = NULL;
-	ret = g_dbus_proxy_call_sync (sm_proxy, "Shutdown",
-	                              g_variant_new ("()"),
-	                              G_DBUS_CALL_FLAGS_NONE,
-	                              -1,
-	                              NULL,
-	                              &error);
-	if (ret == NULL)
-	{
-		g_warning ("Failed to call shutdown: %s", error->message);
-		g_error_free (error);
-	} else {
-		g_variant_unref (ret);
-	}
+  error = NULL;
+  ret = g_dbus_proxy_call_sync(sm_proxy, "Shutdown", g_variant_new("()"),
+                               G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+  if (ret == NULL) {
+    g_warning("Failed to call shutdown: %s", error->message);
+    g_error_free(error);
+  } else {
+    g_variant_unref(ret);
+  }
 
-	if (sm_proxy != NULL)
-	{
-		g_object_unref (sm_proxy);
-	}
+  if (sm_proxy != NULL) {
+    g_object_unref(sm_proxy);
+  }
 }
 
-int main(int argc, char* argv[])
-{
-	GError* error;
-	int conflicting_options;
+int main(int argc, char* argv[]) {
+  GError* error;
+  int conflicting_options;
 
-	/* Initialize the i18n stuff */
+  /* Initialize the i18n stuff */
 #ifdef ENABLE_NLS
-	bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
-	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-	textdomain(GETTEXT_PACKAGE);
+  bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
+  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+  textdomain(GETTEXT_PACKAGE);
 #endif /* ENABLE_NLS */
 
-	error = NULL;
+  error = NULL;
 
-	if (!gtk_init_with_args(&argc, &argv, NULL, options, NULL, &error))
-	{
-		g_warning("Unable to start: %s", error->message);
-		g_error_free(error);
-		exit(1);
-	}
+  if (!gtk_init_with_args(&argc, &argv, NULL, options, NULL, &error)) {
+    g_warning("Unable to start: %s", error->message);
+    g_error_free(error);
+    exit(1);
+  }
 
-	conflicting_options = 0;
+  conflicting_options = 0;
 
-	if (kill_session)
-	{
-		conflicting_options++;
-	}
+  if (kill_session) {
+    conflicting_options++;
+  }
 
-	if (logout)
-	{
-		conflicting_options++;
-	}
+  if (logout) {
+    conflicting_options++;
+  }
 
-	if (force_logout)
-	{
-		conflicting_options++;
-	}
+  if (force_logout) {
+    conflicting_options++;
+  }
 
-	if (logout_dialog)
-	{
-		conflicting_options++;
-	}
+  if (logout_dialog) {
+    conflicting_options++;
+  }
 
-	if (shutdown_dialog)
-	{
-		conflicting_options++;
-	}
+  if (shutdown_dialog) {
+    conflicting_options++;
+  }
 
-	if (conflicting_options > 1)
-	{
-		display_error(_("Program called with conflicting options"));
-	}
+  if (conflicting_options > 1) {
+    display_error(_("Program called with conflicting options"));
+  }
 
-	if (kill_session)
-	{
-		if (no_interaction)
-		{
-			force_logout = TRUE;
-		}
-		else
-		{
-			logout_dialog = TRUE;
-		}
-	}
+  if (kill_session) {
+    if (no_interaction) {
+      force_logout = TRUE;
+    } else {
+      logout_dialog = TRUE;
+    }
+  }
 
-	if (logout)
-	{
-		do_logout(GSM_LOGOUT_MODE_NO_CONFIRMATION);
-	}
-	else if (force_logout)
-	{
-		do_logout(GSM_LOGOUT_MODE_FORCE);
-	}
-	else if (logout_dialog)
-	{
-		do_logout(GSM_LOGOUT_MODE_NORMAL);
-	}
-	else if (shutdown_dialog)
-	{
-		do_shutdown_dialog();
-	}
+  if (logout) {
+    do_logout(GSM_LOGOUT_MODE_NO_CONFIRMATION);
+  } else if (force_logout) {
+    do_logout(GSM_LOGOUT_MODE_FORCE);
+  } else if (logout_dialog) {
+    do_logout(GSM_LOGOUT_MODE_NORMAL);
+  } else if (shutdown_dialog) {
+    do_shutdown_dialog();
+  }
 
-	return 0;
+  return 0;
 }

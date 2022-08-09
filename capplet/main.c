@@ -20,81 +20,81 @@
  * 02110-1301, USA.
  */
 
+#ifdef HAVE_CONFIG_H
 #include <config.h>
-
-#include <unistd.h>
-#include <stdlib.h>
+#endif
 
 #include <glib/gi18n.h>
 #include <gtk/gtk.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "gsm-properties-dialog.h"
 
 static gboolean show_version = FALSE;
 
 static GOptionEntry options[] = {
-	{"version", 0, 0, G_OPTION_ARG_NONE, &show_version, N_("Version of this application"), NULL},
-	{NULL, 0, 0, 0, NULL, NULL, NULL}
-};
+    {"version", 0, 0, G_OPTION_ARG_NONE, &show_version,
+     N_("Version of this application"), NULL},
+    {NULL, 0, 0, 0, NULL, NULL, NULL}};
 
-static void dialog_response(GsmPropertiesDialog* dialog, guint response_id, gpointer data)
-{
-	GError* error;
+static void dialog_response(GsmPropertiesDialog* dialog, guint response_id,
+                            gpointer data) {
+  GError* error;
 
-	if (response_id == GTK_RESPONSE_HELP)
-	{
-		error = NULL;
-		gtk_show_uri_on_window (GTK_WINDOW (dialog), "help:mate-user-guide/gosstartsession-2",
-					gtk_get_current_event_time (), &error);
+  if (response_id == GTK_RESPONSE_HELP) {
+    error = NULL;
+    gtk_show_uri_on_window(GTK_WINDOW(dialog),
+                           "help:mate-user-guide/gosstartsession-2",
+                           gtk_get_current_event_time(), &error);
 
-		if (error != NULL)
-		{
-			GtkWidget* d = gtk_message_dialog_new(GTK_WINDOW(dialog), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT, GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s", _("Could not display help document"));
-			gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(d), "%s", error->message);
-			g_error_free(error);
+    if (error != NULL) {
+      GtkWidget* d = gtk_message_dialog_new(
+          GTK_WINDOW(dialog), GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT,
+          GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE, "%s",
+          _("Could not display help document"));
+      gtk_message_dialog_format_secondary_text(GTK_MESSAGE_DIALOG(d), "%s",
+                                               error->message);
+      g_error_free(error);
 
-			gtk_dialog_run(GTK_DIALOG (d));
-			gtk_widget_destroy(d);
-		}
-	}
-	else
-	{
-		gtk_widget_destroy(GTK_WIDGET (dialog));
-		gtk_main_quit();
-	}
+      gtk_dialog_run(GTK_DIALOG(d));
+      gtk_widget_destroy(d);
+    }
+  } else {
+    gtk_widget_destroy(GTK_WIDGET(dialog));
+    gtk_main_quit();
+  }
 }
 
-int main(int argc, char* argv[])
-{
-	GError* error;
-	GtkWidget* dialog;
+int main(int argc, char* argv[]) {
+  GError* error;
+  GtkWidget* dialog;
 
 #ifdef ENABLE_NLS
-	bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
-	bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
-	textdomain(GETTEXT_PACKAGE);
+  bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
+  bind_textdomain_codeset(GETTEXT_PACKAGE, "UTF-8");
+  textdomain(GETTEXT_PACKAGE);
 #endif /* ENABLE_NLS */
 
-	error = NULL;
+  error = NULL;
 
-	if (!gtk_init_with_args(&argc, &argv, _("- MATE Session Properties"), options, GETTEXT_PACKAGE, &error))
-	{
-		g_warning("Unable to start: %s", error->message);
-		g_error_free(error);
-		return 1;
-	}
+  if (!gtk_init_with_args(&argc, &argv, _("- MATE Session Properties"), options,
+                          GETTEXT_PACKAGE, &error)) {
+    g_warning("Unable to start: %s", error->message);
+    g_error_free(error);
+    return 1;
+  }
 
-	if (show_version)
-	{
-		g_print("%s %s\n", argv[0], VERSION);
-		return 0;
-	}
+  if (show_version) {
+    g_print("%s %s\n", argv[0], VERSION);
+    return 0;
+  }
 
-	dialog = gsm_properties_dialog_new();
-	g_signal_connect(dialog, "response", G_CALLBACK(dialog_response), NULL);
-	gtk_widget_show(dialog);
+  dialog = gsm_properties_dialog_new();
+  g_signal_connect(dialog, "response", G_CALLBACK(dialog_response), NULL);
+  gtk_widget_show(dialog);
 
-	gtk_main();
+  gtk_main();
 
-	return 0;
+  return 0;
 }

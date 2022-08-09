@@ -25,7 +25,7 @@
 #ifndef __MSM_GNOME_H__
 #define __MSM_GNOME_H__
 
-void msm_gnome_start (void);
-void msm_gnome_stop (void);
+void msm_gnome_start(void);
+void msm_gnome_stop(void);
 
 #endif /* !__MSM_GNOME_H__ */

@@ -27,7 +27,8 @@
 G_BEGIN_DECLS
 
 #define MDM_TYPE_SIGNAL_HANDLER (mdm_signal_handler_get_type())
-G_DECLARE_FINAL_TYPE (MdmSignalHandler, mdm_signal_handler, MDM, SIGNAL_HANDLER, GObject)
+G_DECLARE_FINAL_TYPE(MdmSignalHandler, mdm_signal_handler, MDM, SIGNAL_HANDLER,
+                     GObject)
 
 typedef gboolean (*MdmSignalHandlerFunc)(int signal, gpointer data);
 
@@ -36,12 +37,18 @@ typedef void (*MdmShutdownHandlerFunc)(gpointer data);
 typedef struct MdmSignalHandlerPrivate MdmSignalHandlerPrivate;
 
 MdmSignalHandler* mdm_signal_handler_new(void);
-void mdm_signal_handler_set_fatal_func(MdmSignalHandler* handler, MdmShutdownHandlerFunc func, gpointer user_data);
+void mdm_signal_handler_set_fatal_func(MdmSignalHandler* handler,
+                                       MdmShutdownHandlerFunc func,
+                                       gpointer user_data);
 
 void mdm_signal_handler_add_fatal(MdmSignalHandler* handler);
-guint mdm_signal_handler_add(MdmSignalHandler* handler, int signal_number, MdmSignalHandlerFunc callback, gpointer data);
+guint mdm_signal_handler_add(MdmSignalHandler* handler, int signal_number,
+                             MdmSignalHandlerFunc callback, gpointer data);
 void mdm_signal_handler_remove(MdmSignalHandler* handler, guint id);
-void mdm_signal_handler_remove_func(MdmSignalHandler* handler, guint signal_number, MdmSignalHandlerFunc callback, gpointer data);
+void mdm_signal_handler_remove_func(MdmSignalHandler* handler,
+                                    guint signal_number,
+                                    MdmSignalHandlerFunc callback,
+                                    gpointer data);
 
 G_END_DECLS
 

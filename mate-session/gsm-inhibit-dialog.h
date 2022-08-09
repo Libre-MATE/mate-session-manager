@@ -29,23 +29,22 @@
 
 G_BEGIN_DECLS
 
-#define GSM_TYPE_INHIBIT_DIALOG         (gsm_inhibit_dialog_get_type ())
-G_DECLARE_FINAL_TYPE (GsmInhibitDialog, gsm_inhibit_dialog, GSM, INHIBIT_DIALOG, GtkDialog)
+#define GSM_TYPE_INHIBIT_DIALOG (gsm_inhibit_dialog_get_type())
+G_DECLARE_FINAL_TYPE(GsmInhibitDialog, gsm_inhibit_dialog, GSM, INHIBIT_DIALOG,
+                     GtkDialog)
 
-typedef enum
-{
-        GSM_LOGOUT_ACTION_LOGOUT,
-        GSM_LOGOUT_ACTION_SWITCH_USER,
-        GSM_LOGOUT_ACTION_SHUTDOWN,
-        GSM_LOGOUT_ACTION_REBOOT,
-        GSM_LOGOUT_ACTION_HIBERNATE,
-        GSM_LOGOUT_ACTION_SLEEP
+typedef enum {
+  GSM_LOGOUT_ACTION_LOGOUT,
+  GSM_LOGOUT_ACTION_SWITCH_USER,
+  GSM_LOGOUT_ACTION_SHUTDOWN,
+  GSM_LOGOUT_ACTION_REBOOT,
+  GSM_LOGOUT_ACTION_HIBERNATE,
+  GSM_LOGOUT_ACTION_SLEEP
 } GsmLogoutAction;
 
-GtkWidget            * gsm_inhibit_dialog_new                (GsmStore         *inhibitors,
-                                                              GsmStore         *clients,
-                                                              int               action);
-GtkTreeModel         * gsm_inhibit_dialog_get_model          (GsmInhibitDialog *dialog);
+GtkWidget *gsm_inhibit_dialog_new(GsmStore *inhibitors, GsmStore *clients,
+                                  int action);
+GtkTreeModel *gsm_inhibit_dialog_get_model(GsmInhibitDialog *dialog);
 
 G_END_DECLS
 

@@ -29,23 +29,21 @@
 
 G_BEGIN_DECLS
 
-#define GSM_TYPE_LOGOUT_DIALOG         (gsm_logout_dialog_get_type ())
-G_DECLARE_FINAL_TYPE (GsmLogoutDialog, gsm_logout_dialog, GSM, LOGOUT_DIALOG, GtkMessageDialog)
+#define GSM_TYPE_LOGOUT_DIALOG (gsm_logout_dialog_get_type())
+G_DECLARE_FINAL_TYPE(GsmLogoutDialog, gsm_logout_dialog, GSM, LOGOUT_DIALOG,
+                     GtkMessageDialog)
 
-enum
-{
-        GSM_LOGOUT_RESPONSE_LOGOUT,
-        GSM_LOGOUT_RESPONSE_SWITCH_USER,
-        GSM_LOGOUT_RESPONSE_SHUTDOWN,
-        GSM_LOGOUT_RESPONSE_REBOOT,
-        GSM_LOGOUT_RESPONSE_HIBERNATE,
-        GSM_LOGOUT_RESPONSE_SLEEP
+enum {
+  GSM_LOGOUT_RESPONSE_LOGOUT,
+  GSM_LOGOUT_RESPONSE_SWITCH_USER,
+  GSM_LOGOUT_RESPONSE_SHUTDOWN,
+  GSM_LOGOUT_RESPONSE_REBOOT,
+  GSM_LOGOUT_RESPONSE_HIBERNATE,
+  GSM_LOGOUT_RESPONSE_SLEEP
 };
 
-GtkWidget   *gsm_get_logout_dialog        (GdkScreen           *screen,
-                                           guint32              activate_time);
-GtkWidget   *gsm_get_shutdown_dialog      (GdkScreen           *screen,
-                                           guint32              activate_time);
+GtkWidget *gsm_get_logout_dialog(GdkScreen *screen, guint32 activate_time);
+GtkWidget *gsm_get_shutdown_dialog(GdkScreen *screen, guint32 activate_time);
 
 G_END_DECLS
 

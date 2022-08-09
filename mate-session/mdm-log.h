@@ -24,30 +24,28 @@
 #ifndef __MDM_LOG_H
 #define __MDM_LOG_H
 
-#include <stdarg.h>
 #include <glib.h>
+#include <stdarg.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void      mdm_log_default_handler (const gchar   *log_domain,
-                                   GLogLevelFlags log_level,
-                                   const gchar   *message,
-                                   gpointer      unused_data);
-void      mdm_log_set_debug       (gboolean       debug);
-void      mdm_log_toggle_debug    (void);
-void      mdm_log_init            (void);
-void      mdm_log_shutdown        (void);
+void mdm_log_default_handler(const gchar *log_domain, GLogLevelFlags log_level,
+                             const gchar *message, gpointer unused_data);
+void mdm_log_set_debug(gboolean debug);
+void mdm_log_toggle_debug(void);
+void mdm_log_init(void);
+void mdm_log_shutdown(void);
 
 /* compatibility */
-#define   mdm_fail               g_critical
-#define   mdm_error              g_warning
-#define   mdm_info               g_message
-#define   mdm_debug              g_debug
+#define mdm_fail g_critical
+#define mdm_error g_warning
+#define mdm_info g_message
+#define mdm_debug g_debug
 
-#define   mdm_assert             g_assert
-#define   mdm_assert_not_reached g_assert_not_reached
+#define mdm_assert g_assert
+#define mdm_assert_not_reached g_assert_not_reached
 
 #ifdef __cplusplus
 }

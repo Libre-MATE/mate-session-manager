@@ -28,43 +28,40 @@
 extern "C" {
 #endif
 
-#define IS_STRING_EMPTY(x) ((x)==NULL||(x)[0]=='\0')
+#define IS_STRING_EMPTY(x) ((x) == NULL || (x)[0] == '\0')
 
-gchar**     gsm_get_screen_locker_command           (void);
+gchar **gsm_get_screen_locker_command(void);
 
-char *      gsm_util_find_desktop_file_for_app_name (const char  *app_name,
-                                                     char       **dirs);
+char *gsm_util_find_desktop_file_for_app_name(const char *app_name,
+                                              char **dirs);
 
-gchar      *gsm_util_get_empty_tmp_session_dir      (void);
+gchar *gsm_util_get_empty_tmp_session_dir(void);
 
-const char *gsm_util_get_saved_session_dir          (void);
+const char *gsm_util_get_saved_session_dir(void);
 
-gchar**     gsm_util_get_app_dirs                   (void);
+gchar **gsm_util_get_app_dirs(void);
 
-gchar**     gsm_util_get_autostart_dirs             (void);
+gchar **gsm_util_get_autostart_dirs(void);
 
-gchar **    gsm_util_get_desktop_dirs               (void);
+gchar **gsm_util_get_desktop_dirs(void);
 
-gboolean    gsm_util_text_is_blank                  (const char *str);
+gboolean gsm_util_text_is_blank(const char *str);
 
-void        gsm_util_init_error                     (gboolean    fatal,
-                                                     const char *format, ...);
+void gsm_util_init_error(gboolean fatal, const char *format, ...);
 
-char *      gsm_util_generate_startup_id            (void);
+char *gsm_util_generate_startup_id(void);
 
-gboolean    gsm_util_export_activation_environment  (GError     **error);
+gboolean gsm_util_export_activation_environment(GError **error);
 
 #ifdef HAVE_SYSTEMD
-gboolean    gsm_util_export_user_environment        (GError     **error);
+gboolean gsm_util_export_user_environment(GError **error);
 #endif
 
-void        gsm_util_setenv                         (const char *variable,
-                                                     const char *value);
+void gsm_util_setenv(const char *variable, const char *value);
 
-GtkWidget*  gsm_util_dialog_add_button              (GtkDialog   *dialog,
-                                                     const gchar *button_text,
-                                                     const gchar *icon_name,
-                                                     gint         response_id);
+GtkWidget *gsm_util_dialog_add_button(GtkDialog *dialog,
+                                      const gchar *button_text,
+                                      const gchar *icon_name, gint response_id);
 
 #ifdef __cplusplus
 }
