@@ -91,9 +91,6 @@
 #define KEY_IDLE_DELAY "idle-delay"
 #define KEY_AUTOSAVE "auto-save-session"
 
-#define SCREENSAVER_SCHEMA "org.mate.screensaver"
-#define KEY_SLEEP_LOCK "lock-enabled"
-
 #ifdef __GNUC__
 #define UNUSED_VARIABLE __attribute__((unused))
 #else
@@ -140,7 +137,6 @@ typedef struct {
 
   GSettings *settings_session;
   GSettings *settings_lockdown;
-  GSettings *settings_screensaver;
 
   char *renderer;
 
@@ -1059,27 +1055,11 @@ static void manager_switch_user(GsmManager *manager) {
   }
 }
 
-static gboolean sleep_lock_is_enabled(GsmManager *manager) {
-  GsmManagerPrivate *priv;
-
-  priv = gsm_manager_get_instance_private(manager);
-  if (priv->settings_screensaver != NULL)
-    return g_settings_get_boolean(priv->settings_screensaver, KEY_SLEEP_LOCK);
-  else
-    return FALSE;
-}
-
-static void manager_perhaps_lock(GsmManager *manager) {
+static void manager_perhaps_lock(void) {
   gchar **screen_locker_command;
 
   if ((screen_locker_command = gsm_get_screen_locker_command()) != NULL) {
     GError *error = NULL;
-
-    /* only lock if mate-screensaver is set to lock */
-    if (!g_strcmp0(screen_locker_command[0], "mate-screensaver-command") &&
-        !sleep_lock_is_enabled(manager)) {
-      goto clear_screen_locker_command;
-    }
 
     /* do this sync to ensure it's on the screen when we start suspending */
     g_spawn_sync(NULL, screen_locker_command, NULL,
@@ -1095,12 +1075,10 @@ static void manager_perhaps_lock(GsmManager *manager) {
     g_warning("Couldn't find any screen locker");
   }
 
-clear_screen_locker_command:
-
   g_strfreev(screen_locker_command);
 }
 
-static void manager_attempt_hibernate(GsmManager *manager) {
+static void manager_attempt_hibernate(void) {
 #ifdef HAVE_SYSTEMD
   if (LOGIND_RUNNING()) {
     GsmSystemd *systemd;
@@ -1108,7 +1086,7 @@ static void manager_attempt_hibernate(GsmManager *manager) {
     systemd = gsm_get_systemd();
 
     /* lock the screen before we suspend */
-    manager_perhaps_lock(manager);
+    manager_perhaps_lock();
 
     gsm_systemd_attempt_hibernate(systemd);
   } else {
@@ -1119,7 +1097,7 @@ static void manager_attempt_hibernate(GsmManager *manager) {
     gboolean can_hibernate = gsm_consolekit_can_hibernate(consolekit);
     if (can_hibernate) {
       /* lock the screen before we suspend */
-      manager_perhaps_lock(manager);
+      manager_perhaps_lock();
 
       gsm_consolekit_attempt_hibernate(consolekit);
     }
@@ -1128,7 +1106,7 @@ static void manager_attempt_hibernate(GsmManager *manager) {
 #endif
 }
 
-static void manager_attempt_suspend(GsmManager *manager) {
+static void manager_attempt_suspend(void) {
 #ifdef HAVE_SYSTEMD
   if (LOGIND_RUNNING()) {
     GsmSystemd *systemd;
@@ -1136,7 +1114,7 @@ static void manager_attempt_suspend(GsmManager *manager) {
     systemd = gsm_get_systemd();
 
     /* lock the screen before we suspend */
-    manager_perhaps_lock(manager);
+    manager_perhaps_lock();
 
     gsm_systemd_attempt_suspend(systemd);
   } else {
@@ -1147,7 +1125,7 @@ static void manager_attempt_suspend(GsmManager *manager) {
     gboolean can_suspend = gsm_consolekit_can_suspend(consolekit);
     if (can_suspend) {
       /* lock the screen before we suspend */
-      manager_perhaps_lock(manager);
+      manager_perhaps_lock();
 
       gsm_consolekit_attempt_suspend(consolekit);
     }
@@ -1165,10 +1143,10 @@ static void do_inhibit_dialog_action(GsmManager *manager, int action) {
       manager_switch_user(manager);
       break;
     case GSM_LOGOUT_ACTION_HIBERNATE:
-      manager_attempt_hibernate(manager);
+      manager_attempt_hibernate();
       break;
     case GSM_LOGOUT_ACTION_SLEEP:
-      manager_attempt_suspend(manager);
+      manager_attempt_suspend();
       break;
     case GSM_LOGOUT_ACTION_SHUTDOWN:
     case GSM_LOGOUT_ACTION_REBOOT:
@@ -2327,11 +2305,6 @@ static void gsm_manager_dispose(GObject *object) {
     priv->settings_lockdown = NULL;
   }
 
-  if (priv->settings_screensaver) {
-    g_object_unref(priv->settings_screensaver);
-    priv->settings_screensaver = NULL;
-  }
-
   g_free(priv->renderer);
 
   G_OBJECT_CLASS(gsm_manager_parent_class)->dispose(object);
@@ -2447,24 +2420,12 @@ static void on_presence_status_changed(GsmPresence *presence, guint status,
 }
 
 static void gsm_manager_init(GsmManager *manager) {
-  GSettingsSchema *schema;
   GsmManagerPrivate *priv;
 
   priv = gsm_manager_get_instance_private(manager);
 
   priv->settings_session = g_settings_new(SESSION_SCHEMA);
   priv->settings_lockdown = g_settings_new(LOCKDOWN_SCHEMA);
-
-  /* check if mate-screensaver is installed */
-  schema = g_settings_schema_source_lookup(
-      g_settings_schema_source_get_default(), SCREENSAVER_SCHEMA, FALSE);
-
-  if (schema != NULL) {
-    priv->settings_screensaver = g_settings_new_full(schema, NULL, NULL);
-    g_settings_schema_unref(schema);
-  } else {
-    priv->settings_screensaver = NULL;
-  }
 
   priv->inhibitors = gsm_store_new();
   g_signal_connect(priv->inhibitors, "added",
@@ -2836,7 +2797,7 @@ static void request_suspend(GsmManager *manager) {
   g_debug("GsmManager: requesting suspend");
 
   if (!gsm_manager_is_suspend_inhibited(manager)) {
-    manager_attempt_suspend(manager);
+    manager_attempt_suspend();
     return;
   }
 
@@ -2862,7 +2823,7 @@ static void request_hibernate(GsmManager *manager) {
 
   /* hibernate uses suspend inhibit */
   if (!gsm_manager_is_suspend_inhibited(manager)) {
-    manager_attempt_hibernate(manager);
+    manager_attempt_hibernate();
     return;
   }
 

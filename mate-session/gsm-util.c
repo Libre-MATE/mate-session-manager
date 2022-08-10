@@ -41,8 +41,7 @@
 static gchar *_saved_session_dir = NULL;
 
 gchar **gsm_get_screen_locker_command(void) {
-  const char *screen_locker_command[] = {"mate-screensaver-command --lock",
-                                         "xscreensaver-command -lock", NULL};
+  const char *screen_locker_command[] = {"xscreensaver-command -lock", NULL};
   gchar **screen_locker_argv = NULL;
   gsize i;
 
