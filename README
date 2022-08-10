@@ -28,6 +28,19 @@ make
 make install
 
 
+Screensaver
+===========
+
+Only xscreensaver is supported. mate-screensaver support was dropped after
+copyright infringements on August 10, 2022.
+
+On Fedora you must uninstall mate-screensaver and enable xscreensaver daemon:
+
+sudo dnf remove mate-screensaver
+sudo sed -i '/mate-screensaver/d' /usr/libexec/xscreensaver-autostart
+sudo sed -i '/OnlyShowIn/d' /etc/xdg/autostart/xscreensaver-autostart.desktop
+
+
 How to report bugs
 ==================
 
