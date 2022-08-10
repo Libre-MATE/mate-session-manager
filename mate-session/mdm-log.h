@@ -27,9 +27,7 @@
 #include <glib.h>
 #include <stdarg.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 void mdm_log_default_handler(const gchar *log_domain, GLogLevelFlags log_level,
                              const gchar *message, gpointer unused_data);
@@ -47,8 +45,6 @@ void mdm_log_shutdown(void);
 #define mdm_assert g_assert
 #define mdm_assert_not_reached g_assert_not_reached
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* __MDM_LOG_H */

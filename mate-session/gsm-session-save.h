@@ -25,14 +25,10 @@
 
 #include "gsm-store.h"
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 void gsm_session_save(GsmStore *client_store, GError **error);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* __GSM_SESSION_SAVE_H__ */

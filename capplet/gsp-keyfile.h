@@ -30,9 +30,7 @@
 
 #include <glib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #define GSP_KEY_FILE_DESKTOP_KEY_DELAY "X-MATE-Autostart-Delay"
 
@@ -61,8 +59,6 @@ void gsp_key_file_set_locale_string(GKeyFile *keyfile, const gchar *key,
 
 void gsp_key_file_ensure_C_key(GKeyFile *keyfile, const char *key);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* GSP_KEYFILE_H */

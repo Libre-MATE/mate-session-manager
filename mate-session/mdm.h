@@ -31,9 +31,7 @@
 
 #include <glib.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 typedef enum {
   MDM_LOGOUT_ACTION_NONE = 0,
@@ -52,8 +50,6 @@ MdmLogoutAction mdm_get_logout_action(void);
 
 gboolean mdm_supports_logout_action(MdmLogoutAction action);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* __MDM_LOGOUT_ACTION_H__ */

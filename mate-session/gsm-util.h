@@ -24,9 +24,7 @@
 #include <glib.h>
 #include <gtk/gtk.h>
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+G_BEGIN_DECLS
 
 #define IS_STRING_EMPTY(x) ((x) == NULL || (x)[0] == '\0')
 
@@ -63,8 +61,6 @@ GtkWidget *gsm_util_dialog_add_button(GtkDialog *dialog,
                                       const gchar *button_text,
                                       const gchar *icon_name, gint response_id);
 
-#ifdef __cplusplus
-}
-#endif
+G_END_DECLS
 
 #endif /* __GSM_UTIL_H__ */
