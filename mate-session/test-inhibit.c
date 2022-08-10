@@ -58,7 +58,7 @@ typedef enum {
 static gboolean do_inhibit_for_window(GdkWindow *window) {
   GError *error;
   GVariant *ret;
-  const char *startup_id G_GNUC_UNUSED;
+  const char *startup_id;
   const char *app_id;
   const char *reason;
   guint toplevel_xid;
