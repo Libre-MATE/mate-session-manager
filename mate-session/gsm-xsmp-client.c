@@ -205,19 +205,6 @@ static void delete_property(GsmXSMPClient *client, const char *name) {
     return;
   }
 
-#if 0
-        /* This is wrong anyway; we can't unconditionally run the current
-         * discard command; if this client corresponds to a GsmAppResumed,
-         * and the current discard command is identical to the app's
-         * discard_command, then we don't run the discard command now,
-         * because that would delete a saved state we may want to resume
-         * again later.
-         */
-        if (!strcmp (name, SmDiscardCommand)) {
-                gsm_client_run_discard (GSM_CLIENT (client));
-        }
-#endif
-
   g_ptr_array_remove_index_fast(priv->props, index);
   SmFreeProperty(prop);
 }
@@ -1076,10 +1063,6 @@ static void interact_request_callback(SmsConn conn, SmPointer manager_data,
   GsmXSMPClient *client = manager_data;
 
   priv = gsm_xsmp_client_get_instance_private(client);
-#if 0
-        gboolean       res;
-        GError        *error;
-#endif
 
   g_debug("GsmXSMPClient: Client '%s' received InteractRequest(%s)",
           priv->description,
@@ -1088,19 +1071,6 @@ static void interact_request_callback(SmsConn conn, SmPointer manager_data,
   gsm_client_end_session_response(GSM_CLIENT(client), FALSE, FALSE, FALSE,
                                   _("This program is blocking logout."));
 
-#if 0
-        /* Can't just call back with Interact because session client
-           grabs the keyboard!  So, we try to get it to release
-           grabs by telling it we've cancelled the shutdown.
-           This grabbing is clearly bullshit and is not supported by
-           the client spec or protocol spec.
-        */
-        res = xsmp_cancel_end_session (GSM_CLIENT (client), &error);
-        if (! res) {
-                g_warning ("Unable to cancel end session: %s", error->message);
-                g_error_free (error);
-        }
-#endif
   xsmp_interact(GSM_CLIENT(client));
 }
 
