@@ -58,13 +58,11 @@ typedef enum {
 static gboolean do_inhibit_for_window(GdkWindow *window) {
   GError *error;
   GVariant *ret;
-  const char *startup_id;
   const char *app_id;
   const char *reason;
   guint toplevel_xid;
   guint flags;
 
-  startup_id = g_getenv("DESKTOP_AUTOSTART_ID");
   app_id = "caja-cd-burner";
   reason = "A CD burn is in progress.";
   toplevel_xid = gdk_x11_window_get_xid(window);
