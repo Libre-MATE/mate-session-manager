@@ -267,7 +267,7 @@ static gboolean setup_gsettings_condition_monitor(GsmAutostartApp *app,
   g_settings_schema_unref(schema);
 
   signal = g_strdup_printf("changed::%s", elems[1]);
-  g_signal_connect(G_OBJECT(settings), signal,
+  g_signal_connect(settings, signal,
                    G_CALLBACK(gsettings_condition_cb), app);
   g_free(signal);
 
