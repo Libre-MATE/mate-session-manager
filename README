@@ -4,16 +4,6 @@ mate-session
 mate-session contains the MATE session manager, as well as a
 configuration program to choose applications starting on login.
 
-You may download updates to the package from:
-
-   http://pub.mate-desktop.org/releases/
-
-
-Design notes
-============
-
-See https://wiki.gnome.org/Projects/SessionManagement/
-
 
 Installation
 ============
@@ -39,14 +29,3 @@ On Fedora you must uninstall mate-screensaver and enable xscreensaver daemon:
 sudo dnf remove mate-screensaver
 sudo sed -i '/mate-screensaver/d' /usr/libexec/xscreensaver-autostart
 sudo sed -i '/OnlyShowIn/d' /etc/xdg/autostart/xscreensaver-autostart.desktop
-
-
-How to report bugs
-==================
-
-Bugs should be reported to mate-session's Github issue tracker:
-
-   https://github.com/mate-desktop/mate-session-manager/issues?state=open
-
-Please read the HACKING file for information on where to send changes or
-bugfixes for this package.
