@@ -1,6 +1,7 @@
 AC_INIT([mate-session-manager],
         [1.26.0],
         [https://github.com/Libre-MATE/mate-session-manager])
+AC_COPYRIGHT([Copyright (C) 2022 Libre MATE])
 
 AC_CONFIG_SRCDIR([mate-session])
 AC_CONFIG_HEADERS([config.h])
