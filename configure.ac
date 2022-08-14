@@ -19,14 +19,10 @@ AC_INIT([mate-session-manager],
         [1.26.0],
         [https://github.com/Libre-MATE/mate-session-manager])
 AC_COPYRIGHT([Copyright (C) 2022 Libre MATE])
-
 AC_CONFIG_SRCDIR([mate-session])
 AC_CONFIG_HEADERS([config.h])
-
-AM_INIT_AUTOMAKE([1.9 no-dist-gzip dist-xz check-news])
-m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])])
+AM_INIT_AUTOMAKE([1.11 no-dist-gzip dist-xz silent-rules check-news])
 AC_CONFIG_MACRO_DIR([m4])
-
 AM_MAINTAINER_MODE
 
 MATE_COMMON_INIT
