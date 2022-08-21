@@ -385,13 +385,11 @@ static GdkPixbuf *get_pixbuf_for_window(GdkDisplay *gdkdisplay, guint xid,
 static void add_inhibitor(GsmInhibitDialog *dialog, GsmInhibitor *inhibitor) {
   GdkDisplay *gdkdisplay;
   const char *name;
-  const char *icon_name;
   const char *app_id;
   char *desktop_filename;
   GdkPixbuf *pixbuf;
   EggDesktopFile *desktop_file;
   GError *error;
-  char **search_dirs;
   guint xid;
   char *freeme;
 
@@ -425,14 +423,13 @@ static void add_inhibitor(GsmInhibitDialog *dialog, GsmInhibitor *inhibitor) {
   }
 
   if (desktop_filename != NULL) {
-    search_dirs = gsm_util_get_desktop_dirs();
-
+    char **search_dirs = gsm_util_get_desktop_dirs();
     if (g_path_is_absolute(desktop_filename)) {
-      char *basename;
-
       error = NULL;
       desktop_file = egg_desktop_file_new(desktop_filename, &error);
       if (desktop_file == NULL) {
+        char *basename;
+
         if (error) {
           g_warning("Unable to load desktop file '%s': %s", desktop_filename,
                     error->message);
@@ -480,9 +477,8 @@ static void add_inhibitor(GsmInhibitDialog *dialog, GsmInhibitor *inhibitor) {
       }
     } else {
       name = egg_desktop_file_get_name(desktop_file);
-      icon_name = egg_desktop_file_get_icon(desktop_file);
-
       if (pixbuf == NULL) {
+        const char *icon_name = egg_desktop_file_get_icon(desktop_file);
         pixbuf = _load_icon(gtk_icon_theme_get_default(), icon_name,
                             DEFAULT_ICON_SIZE, DEFAULT_ICON_SIZE,
                             DEFAULT_ICON_SIZE, NULL);

@@ -108,15 +108,13 @@ static gboolean client_iochannel_watch(GIOChannel *channel,
 
 static SmProp *find_property(GsmXSMPClient *client, const char *name,
                              int *index) {
-  SmProp *prop;
-  int i;
   GsmXSMPClientPrivate *priv;
+  int i;
 
   priv = gsm_xsmp_client_get_instance_private(client);
 
   for (i = 0; i < priv->props->len; i++) {
-    prop = priv->props->pdata[i];
-
+    SmProp *prop = priv->props->pdata[i];
     if (!strcmp(prop->name, name)) {
       if (index) {
         *index = i;

@@ -158,11 +158,9 @@ gchar *gsm_util_get_empty_tmp_session_dir(void) {
     return NULL;
   } else {
     /* make sure it's empty */
-    GDir *dir;
-    const char *filename;
-
-    dir = g_dir_open(tmp, 0, NULL);
+    GDir *dir = g_dir_open(tmp, 0, NULL);
     if (dir) {
+      const char *filename;
       while ((filename = g_dir_read_name(dir))) {
         gchar *path = g_build_filename(tmp, filename, NULL);
         g_unlink(path);

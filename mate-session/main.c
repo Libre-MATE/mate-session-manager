@@ -369,14 +369,12 @@ static void maybe_load_saved_session_apps(GsmManager* manager) {
 
 static void load_standard_apps(GsmManager* manager,
                                const char* default_session_key) {
-  char** autostart_dirs;
-  int i;
-
-  autostart_dirs = gsm_util_get_autostart_dirs();
+  char** autostart_dirs = gsm_util_get_autostart_dirs();
 
   if (!failsafe) {
-    maybe_load_saved_session_apps(manager);
+    int i;
 
+    maybe_load_saved_session_apps(manager);
     for (i = 0; autostart_dirs[i]; i++) {
       gsm_manager_add_autostart_apps_from_dir(manager, autostart_dirs[i]);
     }

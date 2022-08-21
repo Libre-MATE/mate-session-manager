@@ -156,7 +156,6 @@ static void _gsp_app_manager_emit_removed(GspAppManager *manager, GspApp *app) {
 static int gsp_app_manager_get_dir_index(GspAppManager *manager,
                                          const char *dir) {
   GSList *l;
-  GspXdgDir *xdgdir;
   GspAppManagerPrivate *priv;
 
   g_return_val_if_fail(GSP_IS_APP_MANAGER(manager), -1);
@@ -165,7 +164,7 @@ static int gsp_app_manager_get_dir_index(GspAppManager *manager,
   priv = gsp_app_manager_get_instance_private(manager);
 
   for (l = priv->dirs; l != NULL; l = l->next) {
-    xdgdir = l->data;
+    GspXdgDir *xdgdir = l->data;
     if (strcmp(dir, xdgdir->dir) == 0) {
       return xdgdir->index;
     }
@@ -177,7 +176,6 @@ static int gsp_app_manager_get_dir_index(GspAppManager *manager,
 const char *gsp_app_manager_get_dir(GspAppManager *manager,
                                     unsigned int index) {
   GSList *l;
-  GspXdgDir *xdgdir;
   GspAppManagerPrivate *priv;
 
   g_return_val_if_fail(GSP_IS_APP_MANAGER(manager), NULL);
@@ -185,7 +183,7 @@ const char *gsp_app_manager_get_dir(GspAppManager *manager,
   priv = gsp_app_manager_get_instance_private(manager);
 
   for (l = priv->dirs; l != NULL; l = l->next) {
-    xdgdir = l->data;
+    GspXdgDir *xdgdir = l->data;
     if (index == xdgdir->index) {
       return xdgdir->dir;
     }
@@ -491,7 +489,6 @@ void gsp_app_manager_add(GspAppManager *manager, GspApp *app) {
 GspApp *gsp_app_manager_find_app_with_basename(GspAppManager *manager,
                                                const char *basename) {
   GSList *l;
-  GspApp *app;
   GspAppManagerPrivate *priv;
 
   g_return_val_if_fail(GSP_IS_APP_MANAGER(manager), NULL);
@@ -500,7 +497,7 @@ GspApp *gsp_app_manager_find_app_with_basename(GspAppManager *manager,
   priv = gsp_app_manager_get_instance_private(manager);
 
   for (l = priv->apps; l != NULL; l = l->next) {
-    app = GSP_APP(l->data);
+    GspApp *app = GSP_APP(l->data);
     if (strcmp(basename, gsp_app_get_basename(app)) == 0) return app;
   }
 

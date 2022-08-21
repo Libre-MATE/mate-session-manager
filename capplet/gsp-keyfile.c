@@ -82,7 +82,6 @@ void gsp_key_file_set_locale_string(GKeyFile *keyfile, const gchar *key,
 
 void gsp_key_file_ensure_C_key(GKeyFile *keyfile, const char *key) {
   char *C_value;
-  char *buffer;
 
   /* Make sure we set the "C" locale strings to the terms we set here.
    * This is so that if the user logs into another locale they get their
@@ -90,7 +89,7 @@ void gsp_key_file_ensure_C_key(GKeyFile *keyfile, const char *key) {
    * however, but the user created this entry herself so it's OK */
   C_value = gsp_key_file_get_string(keyfile, key);
   if (C_value == NULL || C_value[0] == '\0') {
-    buffer = gsp_key_file_get_locale_string(keyfile, key);
+    char *buffer = gsp_key_file_get_locale_string(keyfile, key);
     if (buffer) {
       gsp_key_file_set_string(keyfile, key, buffer);
       g_free(buffer);
