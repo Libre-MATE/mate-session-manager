@@ -173,7 +173,7 @@ static void gsm_logout_dialog_destroy(GsmLogoutDialog *logout_dialog,
 static gboolean gsm_logout_supports_system_suspend(
     GsmLogoutDialog *logout_dialog) {
   gboolean ret;
-  ret = FALSE;
+
 #ifdef HAVE_SYSTEMD
   if (LOGIND_RUNNING())
     ret = gsm_systemd_can_suspend(logout_dialog->systemd);
@@ -186,7 +186,7 @@ static gboolean gsm_logout_supports_system_suspend(
 static gboolean gsm_logout_supports_system_hibernate(
     GsmLogoutDialog *logout_dialog) {
   gboolean ret;
-  ret = FALSE;
+
 #ifdef HAVE_SYSTEMD
   if (LOGIND_RUNNING())
     ret = gsm_systemd_can_hibernate(logout_dialog->systemd);
