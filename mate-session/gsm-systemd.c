@@ -476,15 +476,14 @@ void gsm_systemd_attempt_stop(GsmSystemd *manager) {
 
 static void gsm_systemd_get_session_path(DBusConnection *connection,
                                          char **session_path) {
+#ifdef HAVE_SYSTEMD
   DBusError local_error;
   DBusMessage *message;
   DBusMessage *reply;
   DBusMessageIter iter;
   gchar *session_id = NULL;
 
-#ifdef HAVE_SYSTEMD
   sd_pid_get_session(getpid(), &session_id);
-#endif
 
   if (session_id == NULL) return;
 
@@ -524,6 +523,10 @@ out:
   if (session_id != NULL) {
     g_free(session_id);
   }
+#else
+  (void)connection;
+  (void)session_path;
+#endif /* HAVE_SYSTEMD */
 }
 
 void gsm_systemd_set_session_idle(GsmSystemd *manager, gboolean is_idle) {
