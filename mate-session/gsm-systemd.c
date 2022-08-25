@@ -581,14 +581,11 @@ void gsm_systemd_set_session_idle(GsmSystemd *manager, gboolean is_idle) {
 }
 
 gboolean gsm_systemd_can_switch_user(GsmSystemd *manager) {
-  GError *error;
-  char *session_id = NULL;
 #ifdef HAVE_SYSTEMD
+  GError *error = NULL;
+  char *session_id = NULL;
   char *seat_id = NULL;
-#endif
-  int ret = 0;
-
-  error = NULL;
+  int ret;
 
   if (!gsm_systemd_ensure_sd_connection(manager, &error)) {
     g_warning("Could not connect to Systemd: %s", error->message);
@@ -596,21 +593,21 @@ gboolean gsm_systemd_can_switch_user(GsmSystemd *manager) {
     return FALSE;
   }
 
-#ifdef HAVE_SYSTEMD
   sd_pid_get_session(getpid(), &session_id);
-#endif
 
   if (session_id == NULL) return FALSE;
 
-#ifdef HAVE_SYSTEMD
   sd_session_get_seat(session_id, &seat_id);
   ret = sd_seat_can_multi_session(seat_id);
 
   g_free(session_id);
   g_free(seat_id);
-#endif
 
   return ret > 0;
+#else
+  (void)manager;
+  return FALSE;
+#endif /* HAVE_SYSTEMD */
 }
 
 gboolean gsm_systemd_get_restart_privileges(GsmSystemd *manager) {
