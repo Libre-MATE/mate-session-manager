@@ -138,19 +138,19 @@ void msm_gnome_start(void) {
   settings = g_settings_new(GSM_SCHEMA);
   array = g_settings_get_strv(settings, GSM_GNOME_COMPAT_STARTUP_KEY);
   if (array) {
-    guint i;
+    gchar **it;
 
-    for (i = 0; array[i]; i++) {
-      if (strcmp(array[i], "smproxy") == 0) {
+    for (it = array; *it; it++) {
+      if (strcmp(*it, "smproxy") == 0) {
         g_debug("MsmGnome: starting smproxy");
         msm_compat_gnome_smproxy_startup();
         gnome_compat_started = TRUE;
-      } else if (strcmp(array[i], "keyring") == 0) {
+      } else if (strcmp(*it, "keyring") == 0) {
         g_debug("MsmGnome: starting keyring");
         gnome_keyring_daemon_startup();
         gnome_compat_started = TRUE;
       } else {
-        g_debug("MsmGnome: ignoring unknown component \"%s\"", array[i]);
+        g_debug("MsmGnome: ignoring unknown component \"%s\"", *it);
       }
     }
     g_strfreev(array);
