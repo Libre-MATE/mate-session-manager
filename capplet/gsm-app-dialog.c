@@ -267,12 +267,9 @@ static void gsm_app_dialog_dispose(GObject *object) {
 
   dialog = GSM_APP_DIALOG(object);
 
-  g_free(dialog->name);
-  dialog->name = NULL;
-  g_free(dialog->command);
-  dialog->command = NULL;
-  g_free(dialog->comment);
-  dialog->comment = NULL;
+  g_clear_pointer(&dialog->name, g_free);
+  g_clear_pointer(&dialog->command, g_free);
+  g_clear_pointer(&dialog->comment, g_free);
 
   G_OBJECT_CLASS(gsm_app_dialog_parent_class)->dispose(object);
 }
