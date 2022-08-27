@@ -126,16 +126,14 @@ static void _fill_iter_from_app(GtkListStore *list_store, GtkTreeIter *iter,
     icon_names = g_themed_icon_get_names(G_THEMED_ICON(icon));
     if (icon_names[0] == NULL ||
         !gtk_icon_theme_has_icon(theme, icon_names[0])) {
-      g_object_unref(icon);
-      icon = NULL;
+      g_clear_object(&icon);
     }
   } else if (G_IS_FILE_ICON(icon)) {
     GFile *iconfile;
 
     iconfile = g_file_icon_get_file(G_FILE_ICON(icon));
     if (!g_file_query_exists(iconfile, NULL)) {
-      g_object_unref(icon);
-      icon = NULL;
+      g_clear_object(&icon);
     }
   }
 
