@@ -44,12 +44,6 @@
 
 #include "mdm-signal-handler.h"
 
-#ifdef __GNUC__
-#define UNUSED_VARIABLE __attribute__((unused))
-#else
-#define UNUSED_VARIABLE
-#endif
-
 typedef struct {
   int signal_number;
   MdmSignalHandlerFunc func;
@@ -234,7 +228,6 @@ static void mdm_signal_handler_backtrace(void) {
 
 static void signal_handler(int signo) {
   static int in_fatal = 0;
-  int UNUSED_VARIABLE ignore;
   guchar signo_byte = signo;
 
   /* avoid loops */
@@ -258,11 +251,13 @@ static void signal_handler(int signo) {
       /* let the fatal signals interrupt us */
       --in_fatal;
       mdm_signal_handler_backtrace();
-      ignore = write(signal_pipes[1], &signo_byte, 1);
+      if (-1 == write(signal_pipes[1], &signo_byte, 1))
+        g_warning("error writing: %s", strerror(errno));
       break;
     default:
       --in_fatal;
-      ignore = write(signal_pipes[1], &signo_byte, 1);
+      if (-1 == write(signal_pipes[1], &signo_byte, 1))
+        g_warning("error writing: %s", strerror(errno));
       break;
   }
 }
