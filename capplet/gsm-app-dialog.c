@@ -31,6 +31,7 @@
 
 #include "gsm-util.h"
 
+#define GET_WIDGET(x) (GTK_WIDGET(gtk_builder_get_object(builder, (x))))
 #define GTKBUILDER_FILE "session-properties.ui"
 
 #define CAPPLET_NAME_ENTRY_WIDGET_NAME "session_properties_name_entry"
@@ -159,16 +160,16 @@ static gboolean on_spin_output(GtkSpinButton *spin, GsmAppDialog *dialog) {
 static void setup_dialog(GsmAppDialog *dialog) {
   GtkWidget *content_area;
   GtkWidget *widget;
-  GtkBuilder *xml;
+  GtkBuilder *builder;
   GError *error;
 
-  xml = gtk_builder_new();
+  builder = gtk_builder_new();
 #ifdef ENABLE_NLS
-  gtk_builder_set_translation_domain(xml, GETTEXT_PACKAGE);
+  gtk_builder_set_translation_domain(builder, GETTEXT_PACKAGE);
 #endif /* ENABLE_NLS */
 
   error = NULL;
-  if (!gtk_builder_add_from_file(xml, GTKBUILDER_DIR "/" GTKBUILDER_FILE,
+  if (!gtk_builder_add_from_file(builder, GTKBUILDER_DIR "/" GTKBUILDER_FILE,
                                  &error)) {
     if (error) {
       g_warning("Could not load capplet UI file: %s", error->message);
@@ -179,7 +180,7 @@ static void setup_dialog(GsmAppDialog *dialog) {
   }
 
   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  widget = GTK_WIDGET(gtk_builder_get_object(xml, "main-table"));
+  widget = GET_WIDGET("main-table");
   gtk_container_add(GTK_CONTAINER(content_area), widget);
 
   gtk_container_set_border_width(GTK_CONTAINER(dialog), 6);
@@ -201,37 +202,32 @@ static void setup_dialog(GsmAppDialog *dialog) {
                                GTK_RESPONSE_OK);
   }
 
-  dialog->name_entry =
-      GTK_WIDGET(gtk_builder_get_object(xml, CAPPLET_NAME_ENTRY_WIDGET_NAME));
+  dialog->name_entry = GET_WIDGET(CAPPLET_NAME_ENTRY_WIDGET_NAME);
   g_signal_connect(dialog->name_entry, "activate",
                    G_CALLBACK(on_entry_activate), dialog);
   if (dialog->name != NULL) {
     gtk_entry_set_text(GTK_ENTRY(dialog->name_entry), dialog->name);
   }
 
-  dialog->browse_button =
-      GTK_WIDGET(gtk_builder_get_object(xml, CAPPLET_BROWSE_WIDGET_NAME));
+  dialog->browse_button = GET_WIDGET(CAPPLET_BROWSE_WIDGET_NAME);
   g_signal_connect(dialog->browse_button, "clicked",
                    G_CALLBACK(on_browse_button_clicked), dialog);
 
-  dialog->command_entry = GTK_WIDGET(
-      gtk_builder_get_object(xml, CAPPLET_COMMAND_ENTRY_WIDGET_NAME));
+  dialog->command_entry = GET_WIDGET(CAPPLET_COMMAND_ENTRY_WIDGET_NAME);
   g_signal_connect(dialog->command_entry, "activate",
                    G_CALLBACK(on_entry_activate), dialog);
   if (dialog->command != NULL) {
     gtk_entry_set_text(GTK_ENTRY(dialog->command_entry), dialog->command);
   }
 
-  dialog->comment_entry = GTK_WIDGET(
-      gtk_builder_get_object(xml, CAPPLET_COMMENT_ENTRY_WIDGET_NAME));
+  dialog->comment_entry = GET_WIDGET(CAPPLET_COMMENT_ENTRY_WIDGET_NAME);
   g_signal_connect(dialog->comment_entry, "activate",
                    G_CALLBACK(on_entry_activate), dialog);
   if (dialog->comment != NULL) {
     gtk_entry_set_text(GTK_ENTRY(dialog->comment_entry), dialog->comment);
   }
 
-  dialog->delay_spin =
-      GTK_WIDGET(gtk_builder_get_object(xml, CAPPLET_DELAY_SPIN_WIDGET_NAME));
+  dialog->delay_spin = GET_WIDGET(CAPPLET_DELAY_SPIN_WIDGET_NAME);
   g_signal_connect(dialog->delay_spin, "output", G_CALLBACK(on_spin_output),
                    dialog);
   if (dialog->delay > 0) {
@@ -241,8 +237,8 @@ static void setup_dialog(GsmAppDialog *dialog) {
     gtk_adjustment_set_value(adjustment, (gdouble)dialog->delay);
   }
 
-  if (xml != NULL) {
-    g_object_unref(xml);
+  if (builder != NULL) {
+    g_object_unref(builder);
   }
 }
 
