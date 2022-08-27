@@ -64,16 +64,12 @@ static GspXdgDir *_gsp_xdg_dir_new(const char *dir, int index) {
 }
 
 static void _gsp_xdg_dir_free(GspXdgDir *xdgdir) {
-  if (xdgdir->dir) {
-    g_free(xdgdir->dir);
-    xdgdir->dir = NULL;
-  }
+  g_clear_pointer (&xdgdir->dir, g_free);
 
-  if (xdgdir->monitor) {
+  if (xdgdir->monitor)
     g_file_monitor_cancel(xdgdir->monitor);
-    g_object_unref(xdgdir->monitor);
-    xdgdir->monitor = NULL;
-  }
+
+  g_clear_object(&xdgdir->monitor);
 
   g_slice_free(GspXdgDir, xdgdir);
 }
