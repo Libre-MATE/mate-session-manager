@@ -56,7 +56,8 @@
 
 struct _GsmPropertiesDialog {
   GtkDialog parent;
-  GtkBuilder *xml;
+
+  GtkBuilder *builder;
   GtkListStore *list_store;
   GtkTreeModel *tree_filter;
 
@@ -509,7 +510,7 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
   dialog->settings = g_settings_new(SPC_CONFIG_SCHEMA);
 
   toggle_button = GTK_TOGGLE_BUTTON(
-      gtk_builder_get_object(dialog->xml, CAPPLET_SHOW_HIDDEN_WIDGET_NAME));
+      gtk_builder_get_object(dialog->builder, CAPPLET_SHOW_HIDDEN_WIDGET_NAME));
 
   g_settings_bind(dialog->settings, SPC_SHOW_HIDDEN_KEY, toggle_button,
                   "active", G_SETTINGS_BIND_DEFAULT);
@@ -529,7 +530,7 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
                                          visible_func, toggle_button, NULL);
 
   treeview = GTK_TREE_VIEW(
-      gtk_builder_get_object(dialog->xml, CAPPLET_TREEVIEW_WIDGET_NAME));
+      gtk_builder_get_object(dialog->builder, CAPPLET_TREEVIEW_WIDGET_NAME));
   dialog->treeview = treeview;
 
   gtk_tree_view_set_model(treeview, tree_filter);
@@ -604,29 +605,29 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
                                        GTK_SORT_ASCENDING);
 
   button =
-      GTK_WIDGET(gtk_builder_get_object(dialog->xml, CAPPLET_ADD_WIDGET_NAME));
+      GTK_WIDGET(gtk_builder_get_object(dialog->builder, CAPPLET_ADD_WIDGET_NAME));
   dialog->add_button = button;
   g_signal_connect(button, "clicked", G_CALLBACK(on_add_app_clicked), dialog);
 
   button = GTK_WIDGET(
-      gtk_builder_get_object(dialog->xml, CAPPLET_DELETE_WIDGET_NAME));
+      gtk_builder_get_object(dialog->builder, CAPPLET_DELETE_WIDGET_NAME));
   dialog->delete_button = button;
   g_signal_connect(button, "clicked", G_CALLBACK(on_delete_app_clicked),
                    dialog);
 
   button =
-      GTK_WIDGET(gtk_builder_get_object(dialog->xml, CAPPLET_EDIT_WIDGET_NAME));
+      GTK_WIDGET(gtk_builder_get_object(dialog->builder, CAPPLET_EDIT_WIDGET_NAME));
   dialog->edit_button = button;
   g_signal_connect(button, "clicked", G_CALLBACK(on_edit_app_clicked), dialog);
 
   button = GTK_WIDGET(
-      gtk_builder_get_object(dialog->xml, CAPPLET_REMEMBER_WIDGET_NAME));
+      gtk_builder_get_object(dialog->builder, CAPPLET_REMEMBER_WIDGET_NAME));
 
   g_settings_bind(dialog->settings, SPC_AUTOSAVE_KEY, button, "active",
                   G_SETTINGS_BIND_DEFAULT);
 
   button =
-      GTK_WIDGET(gtk_builder_get_object(dialog->xml, CAPPLET_SAVE_WIDGET_NAME));
+      GTK_WIDGET(gtk_builder_get_object(dialog->builder, CAPPLET_SAVE_WIDGET_NAME));
   g_signal_connect(button, "clicked", G_CALLBACK(on_save_session_clicked),
                    dialog);
 
@@ -663,25 +664,15 @@ static void gsm_properties_dialog_dispose(GObject *object) {
 
   dialog = GSM_PROPERTIES_DIALOG(object);
 
-  if (dialog->xml != NULL) {
-    g_object_unref(dialog->xml);
-    dialog->xml = NULL;
-  }
-
-  if (dialog->settings != NULL) {
-    g_object_unref(dialog->settings);
-    dialog->settings = NULL;
-  }
+  g_clear_object (&dialog->builder);
+  g_clear_object (&dialog->settings);
 
   G_OBJECT_CLASS(gsm_properties_dialog_parent_class)->dispose(object);
 
   /* it's important to do this after chaining to the parent dispose
    * method because we want to make sure the treeview has been disposed
    * and removed all its references to GspApp objects */
-  if (dialog->manager != NULL) {
-    g_object_unref(dialog->manager);
-    dialog->manager = NULL;
-  }
+  g_clear_object (&dialog->manager);
 }
 
 static void gsm_properties_dialog_class_init(GsmPropertiesDialogClass *klass) {
@@ -694,14 +685,14 @@ static void gsm_properties_dialog_class_init(GsmPropertiesDialogClass *klass) {
 
 static void gsm_properties_dialog_init(GsmPropertiesDialog *dialog) {
   GtkWidget *content_area;
-  GtkWidget *widget;
+  GObject *notebook;
   GError *error;
 
-  dialog->xml = gtk_builder_new();
-  gtk_builder_set_translation_domain(dialog->xml, GETTEXT_PACKAGE);
+  dialog->builder = gtk_builder_new();
+  gtk_builder_set_translation_domain(dialog->builder, GETTEXT_PACKAGE);
 
   error = NULL;
-  if (!gtk_builder_add_from_file(dialog->xml,
+  if (!gtk_builder_add_from_file(dialog->builder,
                                  GTKBUILDER_DIR "/" GTKBUILDER_FILE, &error)) {
     if (error) {
       g_warning("Could not load capplet UI file: %s", error->message);
@@ -712,13 +703,13 @@ static void gsm_properties_dialog_init(GsmPropertiesDialog *dialog) {
   }
 
   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  widget = GTK_WIDGET(gtk_builder_get_object(dialog->xml, "main-notebook"));
+  notebook = gtk_builder_get_object(dialog->builder, "main-notebook");
 
-  gtk_widget_add_events(widget, GDK_SCROLL_MASK);
-  g_signal_connect(widget, "scroll-event",
+  gtk_widget_add_events(GTK_WIDGET(notebook), GDK_SCROLL_MASK);
+  g_signal_connect(notebook, "scroll-event",
                    G_CALLBACK(on_main_notebook_scroll_event), NULL);
 
-  gtk_box_pack_start(GTK_BOX(content_area), widget, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(notebook), TRUE, TRUE, 0);
 
   gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
   gtk_container_set_border_width(GTK_CONTAINER(dialog), 6);
