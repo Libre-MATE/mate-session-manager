@@ -137,14 +137,6 @@ static void gsp_app_manager_finalize(GObject *object) {
   manager = NULL;
 }
 
-static void _gsp_app_manager_emit_added(GspAppManager *manager, GspApp *app) {
-  g_signal_emit(G_OBJECT(manager), gsp_app_manager_signals[ADDED], 0, app);
-}
-
-static void _gsp_app_manager_emit_removed(GspAppManager *manager, GspApp *app) {
-  g_signal_emit(G_OBJECT(manager), gsp_app_manager_signals[REMOVED], 0, app);
-}
-
 /*
  * Directories
  */
@@ -455,7 +447,7 @@ static void _gsp_app_manager_app_unref(GspApp *app, GspAppManager *manager) {
 static void _gsp_app_manager_app_removed(GspAppManager *manager, GspApp *app) {
   GspAppManagerPrivate *priv;
 
-  _gsp_app_manager_emit_removed(manager, app);
+  g_signal_emit(G_OBJECT(manager), gsp_app_manager_signals[REMOVED], 0, app);
   priv = gsp_app_manager_get_instance_private(manager);
   priv->apps = g_slist_remove(priv->apps, app);
   _gsp_app_manager_app_unref(app, manager);
@@ -472,7 +464,7 @@ void gsp_app_manager_add(GspAppManager *manager, GspApp *app) {
   priv->apps = g_slist_prepend(priv->apps, g_object_ref(app));
   g_signal_connect_swapped(app, "removed",
                            G_CALLBACK(_gsp_app_manager_app_removed), manager);
-  _gsp_app_manager_emit_added(manager, app);
+  g_signal_emit(G_OBJECT(manager), gsp_app_manager_signals[ADDED], 0, app);
 }
 
 GspApp *gsp_app_manager_find_app_with_basename(GspAppManager *manager,
