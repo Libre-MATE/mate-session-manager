@@ -416,27 +416,26 @@ static void _gsp_app_manager_fill_from_dir(GspAppManager *manager,
 
 void gsp_app_manager_fill(GspAppManager *manager) {
   char **autostart_dirs;
-  int i;
+  char **it;
   GspAppManagerPrivate *priv;
+  int i;
 
   priv = gsp_app_manager_get_instance_private(manager);
 
   if (priv->apps != NULL) return;
 
   autostart_dirs = gsm_util_get_autostart_dirs();
+
   /* we always assume that the first directory is the user one */
   g_assert(g_str_has_prefix(autostart_dirs[0], g_get_user_config_dir()));
 
-  for (i = 0; autostart_dirs[i] != NULL; i++) {
-    GspXdgDir *xdgdir;
-
-    if (gsp_app_manager_get_dir_index(manager, autostart_dirs[i]) >= 0) {
+  for (it = autostart_dirs, i = 0; *it; it++) {
+    /* check that the autostart dir doesn't exist in the dirs list */
+    if (gsp_app_manager_get_dir_index(manager, *it) != -1)
       continue;
-    }
 
-    xdgdir = _gsp_xdg_dir_new(autostart_dirs[i], i);
+    GspXdgDir *xdgdir = _gsp_xdg_dir_new(*it, i++);
     priv->dirs = g_slist_prepend(priv->dirs, xdgdir);
-
     _gsp_app_manager_fill_from_dir(manager, xdgdir);
   }
 
