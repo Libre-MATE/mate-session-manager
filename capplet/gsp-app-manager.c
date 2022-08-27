@@ -192,43 +192,37 @@ static int _gsp_app_manager_find_dir_with_basename(GspAppManager *manager,
                                                    const char *basename,
                                                    int minimum_index) {
   GSList *l;
-  GspXdgDir *xdgdir;
-  char *path;
   GKeyFile *keyfile;
-  int result = -1;
   GspAppManagerPrivate *priv;
+  int result = -1;
 
-  path = NULL;
   keyfile = g_key_file_new();
   priv = gsp_app_manager_get_instance_private(manager);
 
   for (l = priv->dirs; l != NULL; l = l->next) {
-    xdgdir = l->data;
+    char *path;
+    GspXdgDir *xdgdir = l->data;
 
-    if (xdgdir->index <= minimum_index) {
+    if (xdgdir->index <= minimum_index)
       continue;
-    }
 
-    g_free(path);
     path = g_build_filename(xdgdir->dir, basename, NULL);
-    if (!g_file_test(path, G_FILE_TEST_EXISTS)) {
-      continue;
-    }
-
-    if (!g_key_file_load_from_file(keyfile, path, G_KEY_FILE_NONE, NULL)) {
+    if (!g_file_test(path, G_FILE_TEST_EXISTS) ||
+        !g_key_file_load_from_file(keyfile, path, G_KEY_FILE_NONE, NULL)) {
+      g_free(path);
       continue;
     }
 
     /* the file exists and is readable */
-    if (result == -1) {
+    if (result == -1)
       result = xdgdir->index;
-    } else {
+    else
       result = MIN(result, xdgdir->index);
-    }
+
+    g_free(path);
   }
 
   g_key_file_free(keyfile);
-  g_free(path);
 
   return result;
 }
