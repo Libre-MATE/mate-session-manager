@@ -41,12 +41,6 @@
 #define CAPPLET_DELAY_SPIN_WIDGET_NAME "session_properties_delay_spin"
 #define CAPPLET_BROWSE_WIDGET_NAME "session_properties_browse_button"
 
-#ifdef __GNUC__
-#define UNUSED_VARIABLE __attribute__((unused))
-#else
-#define UNUSED_VARIABLE
-#endif
-
 struct _GsmAppDialog {
   GtkDialog parent;
   GtkWidget *name_entry;
