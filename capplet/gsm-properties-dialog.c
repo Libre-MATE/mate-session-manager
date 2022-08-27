@@ -575,9 +575,11 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
     GtkTargetEntry *targets;
     gint n_targets;
     gint i;
+
     targets = gtk_target_table_new_from_list(targetlist, &n_targets);
     for (i = 0; i < n_targets; i++) targets[i].flags = GTK_TARGET_OTHER_WIDGET;
-    targetlist = gtk_target_list_new(targets, n_targets);
+
+    targetlist = gtk_target_list_new(targets, (guint)n_targets);
     gtk_drag_dest_set_target_list(GTK_WIDGET(dialog->treeview), targetlist);
     gtk_target_list_unref(targetlist);
     gtk_target_table_free(targets, n_targets);
