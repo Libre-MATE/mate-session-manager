@@ -31,6 +31,7 @@
 
 #include "gsm-util.h"
 
+#define GET_OBJECT(x) (gtk_builder_get_object(builder, (x)))
 #define GET_WIDGET(x) (GTK_WIDGET(gtk_builder_get_object(builder, (x))))
 #define GTKBUILDER_FILE "session-properties.ui"
 
@@ -52,7 +53,6 @@ struct _GsmAppDialog {
   GtkWidget *command_entry;
   GtkWidget *comment_entry;
   GtkWidget *delay_spin;
-  GtkWidget *browse_button;
   char *name;
   char *command;
   char *comment;
@@ -159,7 +159,6 @@ static gboolean on_spin_output(GtkSpinButton *spin, GsmAppDialog *dialog) {
 
 static void setup_dialog(GsmAppDialog *dialog) {
   GtkWidget *content_area;
-  GtkWidget *widget;
   GtkBuilder *builder;
   GError *error;
 
@@ -180,8 +179,7 @@ static void setup_dialog(GsmAppDialog *dialog) {
   }
 
   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  widget = GET_WIDGET("main-table");
-  gtk_container_add(GTK_CONTAINER(content_area), widget);
+  gtk_container_add(GTK_CONTAINER(content_area), GET_WIDGET("main-table"));
 
   gtk_container_set_border_width(GTK_CONTAINER(dialog), 6);
   gtk_window_set_icon_name(GTK_WINDOW(dialog), "mate-session-properties");
@@ -209,8 +207,7 @@ static void setup_dialog(GsmAppDialog *dialog) {
     gtk_entry_set_text(GTK_ENTRY(dialog->name_entry), dialog->name);
   }
 
-  dialog->browse_button = GET_WIDGET(CAPPLET_BROWSE_WIDGET_NAME);
-  g_signal_connect(dialog->browse_button, "clicked",
+  g_signal_connect(GET_OBJECT(CAPPLET_BROWSE_WIDGET_NAME), "clicked",
                    G_CALLBACK(on_browse_button_clicked), dialog);
 
   dialog->command_entry = GET_WIDGET(CAPPLET_COMMAND_ENTRY_WIDGET_NAME);
