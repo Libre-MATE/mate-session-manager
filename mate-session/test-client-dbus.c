@@ -52,7 +52,7 @@ static gboolean session_manager_connect(void) {
     if (bus_connection == NULL) {
       g_message("Failed to connect to the session bus: %s", error->message);
       g_error_free(error);
-      exit(1);
+      exit(EXIT_FAILURE);
     }
   }
 
@@ -200,7 +200,7 @@ int main(int argc, char *argv[]) {
   res = session_manager_connect();
   if (!res) {
     g_warning("Unable to connect to session manager");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   res = register_client();
@@ -218,5 +218,5 @@ int main(int argc, char *argv[]) {
   unregister_client();
   session_manager_disconnect();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

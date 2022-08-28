@@ -156,21 +156,21 @@ int main(int argc, char *argv[]) {
       i++;
       if (i == argc) {
         g_print(_("%s requires an argument\n"), argv[i]);
-        exit(1);
+        exit(EXIT_FAILURE);
       }
       app_id = argv[i];
     } else if (strcmp(argv[i], "--reason") == 0) {
       i++;
       if (i == argc) {
         g_print(_("%s requires an argument\n"), argv[i]);
-        exit(1);
+        exit(EXIT_FAILURE);
       }
       reason = argv[i];
     } else if (strcmp(argv[i], "--inhibit") == 0) {
       i++;
       if (i == argc) {
         g_print(_("%s requires an argument\n"), argv[i]);
-        exit(1);
+        exit(EXIT_FAILURE);
       }
       inhibit_flags |= parse_flags(argv[i]);
     } else
@@ -179,12 +179,12 @@ int main(int argc, char *argv[]) {
 
   if (show_version) {
     version();
-    return 0;
+    return EXIT_SUCCESS;
   }
 
   if (show_help || i == argc) {
     usage();
-    return 0;
+    return EXIT_SUCCESS;
   }
 
   if (inhibit_flags == 0) inhibit_flags = GSM_INHIBITOR_FLAG_IDLE;
@@ -194,24 +194,24 @@ int main(int argc, char *argv[]) {
   pid = fork();
   if (pid < 0) {
     g_print("fork failed\n");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   if (pid == 0) {
     execvp(argv[i], argv + i);
     g_print(_("Failed to execute %s\n"), argv[i]);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   do {
     if (waitpid(pid, &status, 0) == -1) {
       g_print("waitpid failed\n");
-      exit(1);
+      exit(EXIT_FAILURE);
     }
 
     if (WIFEXITED(status)) exit(WEXITSTATUS(status));
 
   } while (!WIFEXITED(status) && !WIFSIGNALED(status));
 
-  return 0;
+  return EXIT_SUCCESS;
 }

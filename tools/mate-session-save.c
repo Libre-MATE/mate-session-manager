@@ -130,9 +130,8 @@ static void do_logout(unsigned int mode) {
 
   sm_proxy = get_sm_proxy();
 
-  if (sm_proxy == NULL) {
+  if (sm_proxy == NULL)
     return;
-  }
 
   error = NULL;
   ret = g_dbus_proxy_call_sync(sm_proxy, "Logout", g_variant_new("(u)", mode),
@@ -157,9 +156,8 @@ static void do_shutdown_dialog(void) {
 
   sm_proxy = get_sm_proxy();
 
-  if (sm_proxy == NULL) {
+  if (sm_proxy == NULL)
     return;
-  }
 
   error = NULL;
   ret = g_dbus_proxy_call_sync(sm_proxy, "Shutdown", g_variant_new("()"),
@@ -192,34 +190,22 @@ int main(int argc, char* argv[]) {
   if (!gtk_init_with_args(&argc, &argv, NULL, options, NULL, &error)) {
     g_warning("Unable to start: %s", error->message);
     g_error_free(error);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   conflicting_options = 0;
-
-  if (kill_session) {
+  if (kill_session)
     conflicting_options++;
-  }
-
-  if (logout) {
+  if (logout)
     conflicting_options++;
-  }
-
-  if (force_logout) {
+  if (force_logout)
     conflicting_options++;
-  }
-
-  if (logout_dialog) {
+  if (logout_dialog)
     conflicting_options++;
-  }
-
-  if (shutdown_dialog) {
+  if (shutdown_dialog)
     conflicting_options++;
-  }
-
-  if (conflicting_options > 1) {
+  if (conflicting_options > 1)
     display_error(_("Program called with conflicting options"));
-  }
 
   if (kill_session) {
     if (no_interaction) {
@@ -239,5 +225,5 @@ int main(int argc, char* argv[]) {
     do_shutdown_dialog();
   }
 
-  return 0;
+  return EXIT_SUCCESS;
 }

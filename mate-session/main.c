@@ -103,7 +103,7 @@ static gboolean initialize_gsettings(void) {
 static void on_bus_name_lost(DBusGProxy* bus_proxy, const char* name,
                              gpointer data) {
   g_warning("Lost name on bus: %s, exiting", name);
-  exit(1);
+  exit(EXIT_FAILURE);
 }
 
 static gboolean acquire_name_on_proxy(DBusGProxy* bus_proxy, const char* name) {
@@ -597,12 +597,12 @@ int main(int argc, char** argv) {
 
   if (error != NULL) {
     g_warning("%s", error->message);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   if (show_version) {
     g_print("%s %s\n", g_get_application_name(), VERSION);
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   gsm_util_export_activation_environment(NULL);
@@ -669,7 +669,7 @@ int main(int argc, char** argv) {
    * Make sure gsettings is set up correctly.  If not, then bail.
    */
 
-  if (initialize_gsettings() != TRUE) exit(1);
+  if (initialize_gsettings() != TRUE) exit(EXIT_FAILURE);
 
   /* Look if accessibility is enabled */
   accessibility_settings = g_settings_new(ACCESSIBILITY_SCHEMA);
@@ -741,5 +741,5 @@ int main(int argc, char** argv) {
   msm_gnome_stop();
   mdm_log_shutdown();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

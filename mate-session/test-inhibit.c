@@ -137,7 +137,7 @@ int main(int argc, char *argv[]) {
   res = session_manager_connect();
   if (!res) {
     g_warning("Unable to connect to session manager");
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   g_timeout_add_seconds(30, (GSourceFunc)gtk_main_quit, NULL);
@@ -155,5 +155,5 @@ int main(int argc, char *argv[]) {
   do_uninhibit();
   session_manager_disconnect();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

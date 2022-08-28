@@ -149,10 +149,10 @@ int main(int argc, char **argv) {
     if (renderer_string) {
       g_print("%s", renderer_string);
       g_free(renderer_string);
-      return 0;
+      return EXIT_SUCCESS;
     }
     g_free(renderer_string);
-    return 1;
+    return EXIT_FAILURE;
   }
 
   display = gdk_display_get_default();
@@ -161,7 +161,7 @@ int main(int argc, char **argv) {
    */
   if (!GDK_IS_X11_DISPLAY(display)) {
     g_printerr("mate-session-check-accelerated: no X11 display found\n");
-    return 1;
+    return EXIT_FAILURE;
   }
 
   rootwin = gdk_x11_get_default_root_xwindow();
@@ -206,7 +206,7 @@ int main(int argc, char **argv) {
           g_print("%s", data);
         }
 
-        return (*is_accelerated_ptr == 0 ? 1 : 0);
+        return (*is_accelerated_ptr == 0 ? EXIT_FAILURE : EXIT_SUCCESS);
       }
     }
   }
@@ -318,5 +318,5 @@ finish:
   g_free(gles_renderer_string);
 #endif
 
-  return is_accelerated ? 0 : 1;
+  return is_accelerated ? EXIT_SUCCESS : EXIT_FAILURE;
 }

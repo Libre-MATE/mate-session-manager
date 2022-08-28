@@ -42,7 +42,7 @@
 #include <GLES2/gl2.h>
 #include <GLES2/gl2ext.h>
 #include <gdk/gdkx.h>
-#endif
+#endif /* GDK_WINDOWING_X11 */
 
 #include "mate-session-check-accelerated-common.h"
 
@@ -177,7 +177,7 @@ out:
   gdk_x11_display_error_trap_pop_ignored(gdk_dpy);
   return renderer;
 }
-#endif
+#endif /* GDK_WINDOWING_X11 */
 
 static gboolean print_renderer = FALSE;
 
@@ -214,7 +214,7 @@ int main(int argc, char **argv) {
       ret = HELPER_ACCEL;
   }
   g_free(renderer);
-#endif
+#endif /* GDK_WINDOWING_X11 */
 
 out:
   g_option_context_free(context);

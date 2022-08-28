@@ -82,12 +82,12 @@ int main(int argc, char* argv[]) {
                           GETTEXT_PACKAGE, &error)) {
     g_warning("Unable to start: %s", error->message);
     g_error_free(error);
-    return 1;
+    return EXIT_FAILURE;
   }
 
   if (show_version) {
     g_print("%s %s\n", argv[0], VERSION);
-    return 0;
+    return EXIT_SUCCESS;
   }
 
   dialog = gsm_properties_dialog_new();
@@ -96,5 +96,5 @@ int main(int argc, char* argv[]) {
 
   gtk_main();
 
-  return 0;
+  return EXIT_SUCCESS;
 }

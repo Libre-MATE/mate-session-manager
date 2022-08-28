@@ -146,7 +146,7 @@ static gboolean signal_io_watch(GIOChannel* ioc, GIOCondition condition,
       handler->fatal_func(handler->fatal_data);
     } else {
       g_debug("MdmSignalHandler: Caught termination signal - exiting");
-      exit(1);
+      exit(EXIT_FAILURE);
     }
 
     return FALSE;
@@ -244,7 +244,7 @@ static void signal_handler(int signo) {
     case SIGABRT:
     case SIGTRAP:
       mdm_signal_handler_backtrace();
-      exit(1);
+      exit(EXIT_FAILURE);
       break;
     case SIGFPE:
     case SIGPIPE:

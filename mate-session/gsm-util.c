@@ -335,7 +335,7 @@ void gsm_util_init_error(gboolean fatal, const char *format, ...) {
           _("Unable to start login session (and unable to connect to the X "
             "server)"));
       g_printerr("%s", msg);
-      exit(1);
+      exit(EXIT_FAILURE);
     }
   }
 

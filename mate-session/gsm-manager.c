@@ -1827,7 +1827,7 @@ static gboolean register_manager(GsmManager *manager) {
       g_critical("error getting session bus: %s", error->message);
       g_error_free(error);
     }
-    exit(1);
+    exit(EXIT_FAILURE);
   }
 
   connection = dbus_g_connection_get_connection(priv->connection);
