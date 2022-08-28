@@ -23,6 +23,7 @@
 #define __GSM_STORE_H
 
 #include <glib-object.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 

@@ -23,6 +23,7 @@
 #define __GSM_APP_DIALOG_H
 
 #include <glib-object.h>
+#include <glib.h>
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS

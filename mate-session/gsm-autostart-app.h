@@ -24,6 +24,8 @@
 #define __GSM_AUTOSTART_APP_H__
 
 #include <X11/SM/SMlib.h>
+#include <glib-object.h>
+#include <glib.h>
 
 #include "gsm-app.h"
 

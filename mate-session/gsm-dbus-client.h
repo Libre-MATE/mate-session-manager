@@ -22,6 +22,9 @@
 #ifndef __GSM_DBUS_CLIENT_H__
 #define __GSM_DBUS_CLIENT_H__
 
+#include <glib-object.h>
+#include <glib.h>
+
 #include "gsm-client.h"
 
 G_BEGIN_DECLS

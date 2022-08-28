@@ -26,6 +26,7 @@
 #define __GSP_APP_MANAGER_H
 
 #include <glib-object.h>
+#include <glib.h>
 #include <gsp-app.h>
 
 G_BEGIN_DECLS

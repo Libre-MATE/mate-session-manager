@@ -23,6 +23,7 @@
 #define __GSM_XSMP_SERVER_H
 
 #include <glib-object.h>
+#include <glib.h>
 
 #include "gsm-store.h"
 

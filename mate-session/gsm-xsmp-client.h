@@ -23,6 +23,8 @@
 #define __GSM_XSMP_CLIENT_H__
 
 #include <X11/SM/SMlib.h>
+#include <glib-object.h>
+#include <glib.h>
 
 #include "gsm-client.h"
 

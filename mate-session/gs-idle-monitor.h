@@ -25,6 +25,7 @@
 #define __GS_IDLE_MONITOR_H
 
 #include <glib-object.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 

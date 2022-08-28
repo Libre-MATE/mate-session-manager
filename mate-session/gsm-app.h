@@ -24,6 +24,7 @@
 #define __GSM_APP_H__
 
 #include <glib-object.h>
+#include <glib.h>
 #include <sys/types.h>
 
 #include "eggdesktopfile.h"

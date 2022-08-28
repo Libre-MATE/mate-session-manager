@@ -24,6 +24,7 @@
 
 #include <dbus/dbus-glib.h>
 #include <glib-object.h>
+#include <glib.h>
 
 #include "gsm-store.h"
 

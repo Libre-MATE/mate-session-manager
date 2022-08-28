@@ -25,6 +25,8 @@
 #ifndef __GSM_LOGOUT_DIALOG_H__
 #define __GSM_LOGOUT_DIALOG_H__
 
+#include <glib-object.h>
+#include <glib.h>
 #include <gtk/gtk.h>
 
 G_BEGIN_DECLS

@@ -23,6 +23,7 @@
 #define __MDM_SIGNAL_HANDLER_H
 
 #include <glib-object.h>
+#include <glib.h>
 
 G_BEGIN_DECLS
 

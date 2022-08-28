@@ -23,6 +23,7 @@
 #define __GSM_INHIBITOR_H__
 
 #include <glib-object.h>
+#include <glib.h>
 #include <sys/types.h>
 
 G_BEGIN_DECLS
