@@ -40,7 +40,6 @@
 
 #define GET_OBJECT(x) (gtk_builder_get_object(dialog->builder, (x)))
 #define GET_WIDGET(x) (GTK_WIDGET(GET_OBJECT (x)))
-#define GTKBUILDER_FILE "session-properties.ui"
 
 #define CAPPLET_TREEVIEW_WIDGET_NAME "session_properties_treeview"
 #define CAPPLET_ADD_WIDGET_NAME "session_properties_add_button"
@@ -669,21 +668,8 @@ static void gsm_properties_dialog_class_init(GsmPropertiesDialogClass *klass) {
 static void gsm_properties_dialog_init(GsmPropertiesDialog *dialog) {
   GtkWidget *content_area;
   GObject *notebook;
-  GError *error;
 
-  dialog->builder = gtk_builder_new();
-  gtk_builder_set_translation_domain(dialog->builder, GETTEXT_PACKAGE);
-
-  error = NULL;
-  if (!gtk_builder_add_from_file(dialog->builder,
-                                 GTKBUILDER_DIR "/" GTKBUILDER_FILE, &error)) {
-    if (error) {
-      g_warning("Could not load capplet UI file: %s", error->message);
-      g_error_free(error);
-    } else {
-      g_warning("Could not load capplet UI file.");
-    }
-  }
+  dialog->builder = gtk_builder_new_from_resource("/org/mate/session/properties.ui");
 
   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   notebook = GET_OBJECT("main-notebook");

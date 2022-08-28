@@ -9,6 +9,8 @@ AM_CPPFLAGS =						\
 
 AM_CFLAGS = $(WARN_CFLAGS)
 
+BUILT_SOURCES = mate-session-properties-resources.h mate-session-properties-resources.c
+nodist_mate_session_properties_SOURCES = $(BUILT_SOURCES)
 mate_session_properties_SOURCES =			\
 	main.c						\
 	gsm-properties-dialog.h				\
@@ -22,8 +24,14 @@ mate_session_properties_SOURCES =			\
 	gsp-keyfile.h					\
 	gsp-keyfile.c
 
-mate_session_properties_LDADD =			\
+mate-session-properties-resources.h mate-session-properties-resources.c: $(srcdir)/../data/org.mate.session.gresource.xml Makefile $(shell $(GLIB_COMPILE_RESOURCES) --generate-dependencies --sourcedir $(srcdir)/../data $(srcdir)/../data/org.mate.session.gresource.xml)
+	$(AM_V_GEN) XMLLINT=$(XMLLINT) $(GLIB_COMPILE_RESOURCES) --target $@ --sourcedir $(srcdir)/../data --generate --c-name session_properties $<
+
+mate_session_properties_LDADD =				\
 	$(SESSION_PROPERTIES_LIBS)			\
 	$(top_builddir)/mate-session/libgsmutil.la
+
+CLEANFILES = \
+	$(BUILT_SOURCES)
 
 -include $(top_srcdir)/git.mk

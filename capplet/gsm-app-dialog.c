@@ -33,7 +33,6 @@
 
 #define GET_OBJECT(x) (gtk_builder_get_object(builder, (x)))
 #define GET_WIDGET(x) (GTK_WIDGET(gtk_builder_get_object(builder, (x))))
-#define GTKBUILDER_FILE "session-properties.ui"
 
 #define CAPPLET_NAME_ENTRY_WIDGET_NAME "session_properties_name_entry"
 #define CAPPLET_COMMAND_ENTRY_WIDGET_NAME "session_properties_command_entry"
@@ -154,23 +153,8 @@ static gboolean on_spin_output(GtkSpinButton *spin, GsmAppDialog *dialog) {
 static void setup_dialog(GsmAppDialog *dialog) {
   GtkWidget *content_area;
   GtkBuilder *builder;
-  GError *error;
 
-  builder = gtk_builder_new();
-#ifdef ENABLE_NLS
-  gtk_builder_set_translation_domain(builder, GETTEXT_PACKAGE);
-#endif /* ENABLE_NLS */
-
-  error = NULL;
-  if (!gtk_builder_add_from_file(builder, GTKBUILDER_DIR "/" GTKBUILDER_FILE,
-                                 &error)) {
-    if (error) {
-      g_warning("Could not load capplet UI file: %s", error->message);
-      g_error_free(error);
-    } else {
-      g_warning("Could not load capplet UI file.");
-    }
-  }
+  builder = gtk_builder_new_from_resource("/org/mate/session/properties.ui");
 
   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   gtk_container_add(GTK_CONTAINER(content_area), GET_WIDGET("main-table"));

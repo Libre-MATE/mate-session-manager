@@ -4,7 +4,6 @@ bin_SCRIPTS = mate-wm
 
 uidir = $(pkgdatadir)
 ui_DATA = \
-	session-properties.ui	\
 	gsm-inhibit-dialog.ui
 
 hwcompatdir = $(pkgdatadir)
@@ -34,13 +33,15 @@ gsettings_SCHEMAS = $(gsettingsschema_in_files:.xml.in=.xml)
 @GSETTINGS_RULES@
 
 EXTRA_DIST =					\
-	mate-wm				\
 	$(xsession_in_files)			\
 	$(gsettingsschema_in_files)		\
 	$(hwcompat_DATA)			\
 	$(ui_DATA)				\
 	$(desktop_in_files)			\
-	$(pixmap_DATA_dist)
+	$(pixmap_DATA_dist)			\
+	mate-wm					\
+	org.mate.session.gresource.xml		\
+	properties.ui
 
 CLEANFILES =					\
 	$(xsession_DATA)			\
