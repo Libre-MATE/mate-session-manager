@@ -132,51 +132,6 @@ static void gsp_app_init(GspApp *app) {
   priv->xdg_system_position = G_MAXUINT;
 }
 
-static void _gsp_app_free_reusable_data(GspApp *app) {
-  GspAppPrivate *priv;
-
-  priv = gsp_app_get_instance_private(app);
-  if (priv->path) {
-    g_free(priv->path);
-    priv->path = NULL;
-  }
-
-  if (priv->name) {
-    g_free(priv->name);
-    priv->name = NULL;
-  }
-
-  if (priv->exec) {
-    g_free(priv->exec);
-    priv->exec = NULL;
-  }
-
-  if (priv->comment) {
-    g_free(priv->comment);
-    priv->comment = NULL;
-  }
-
-  if (priv->icon) {
-    g_free(priv->icon);
-    priv->icon = NULL;
-  }
-
-  if (priv->gicon) {
-    g_object_unref(priv->gicon);
-    priv->gicon = NULL;
-  }
-
-  if (priv->description) {
-    g_free(priv->description);
-    priv->description = NULL;
-  }
-
-  if (priv->old_system_path) {
-    g_free(priv->old_system_path);
-    priv->old_system_path = NULL;
-  }
-}
-
 static void gsp_app_dispose(GObject *object) {
   GspApp *app;
   GspAppPrivate *priv;
@@ -208,13 +163,15 @@ static void gsp_app_finalize(GObject *object) {
 
   app = GSP_APP(object);
   priv = gsp_app_get_instance_private(app);
-
-  if (priv->basename) {
-    g_free(priv->basename);
-    priv->basename = NULL;
-  }
-
-  _gsp_app_free_reusable_data(app);
+  g_clear_pointer(&priv->basename, g_free);
+  g_clear_pointer(&priv->path, g_free);
+  g_clear_pointer(&priv->name, g_free);
+  g_clear_pointer(&priv->exec, g_free);
+  g_clear_pointer(&priv->comment, g_free);
+  g_clear_pointer(&priv->icon, g_free);
+  g_clear_object(&priv->gicon);
+  g_clear_pointer(&priv->description, g_free);
+  g_clear_pointer(&priv->old_system_path, g_free);
 
   G_OBJECT_CLASS(gsp_app_parent_class)->finalize(object);
 }
@@ -795,13 +752,8 @@ GspApp *gsp_app_new(const char *path, unsigned int xdg_position) {
   }
 
   keyfile = g_key_file_new();
-  if (!g_key_file_load_from_file(keyfile, path, G_KEY_FILE_NONE, NULL)) {
-    g_key_file_free(keyfile);
-    g_free(basename);
-    return NULL;
-  }
-
-  if (!gsp_app_can_launch(keyfile)) {
+  if (!g_key_file_load_from_file(keyfile, path, G_KEY_FILE_NONE, NULL) ||
+      !gsp_app_can_launch(keyfile)) {
     g_key_file_free(keyfile);
     g_free(basename);
     return NULL;
@@ -813,11 +765,17 @@ GspApp *gsp_app_new(const char *path, unsigned int xdg_position) {
     priv->basename = basename;
   } else {
     g_free(basename);
-    _gsp_app_free_reusable_data(app);
+    g_clear_pointer(&priv->path, g_free);
+    g_clear_pointer(&priv->name, g_free);
+    g_clear_pointer(&priv->exec, g_free);
+    g_clear_pointer(&priv->comment, g_free);
+    g_clear_pointer(&priv->icon, g_free);
+    g_clear_object(&priv->gicon);
+    g_clear_pointer(&priv->description, g_free);
+    g_clear_pointer(&priv->old_system_path, g_free);
   }
 
   priv->path = g_strdup(path);
-
   priv->hidden =
       gsp_key_file_get_boolean(keyfile, G_KEY_FILE_DESKTOP_KEY_HIDDEN, FALSE);
   priv->nodisplay = gsp_key_file_get_boolean(
