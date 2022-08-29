@@ -31,15 +31,6 @@
 
 #include "gsm-util.h"
 
-#define GET_OBJECT(x) (gtk_builder_get_object(builder, (x)))
-#define GET_WIDGET(x) (GTK_WIDGET(gtk_builder_get_object(builder, (x))))
-
-#define CAPPLET_NAME_ENTRY_WIDGET_NAME "session_properties_name_entry"
-#define CAPPLET_COMMAND_ENTRY_WIDGET_NAME "session_properties_command_entry"
-#define CAPPLET_COMMENT_ENTRY_WIDGET_NAME "session_properties_comment_entry"
-#define CAPPLET_DELAY_SPIN_WIDGET_NAME "session_properties_delay_spin"
-#define CAPPLET_BROWSE_WIDGET_NAME "session_properties_browse_button"
-
 struct _GsmAppDialog {
   GtkDialog parent;
   GtkWidget *name_entry;
@@ -151,19 +142,6 @@ static gboolean on_spin_output(GtkSpinButton *spin, GsmAppDialog *dialog) {
 }
 
 static void setup_dialog(GsmAppDialog *dialog) {
-  GtkWidget *content_area;
-  GtkBuilder *builder;
-
-  builder = gtk_builder_new_from_resource("/org/mate/session/detail.ui");
-
-  content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  gtk_container_add(GTK_CONTAINER(content_area), GET_WIDGET("main-table"));
-
-  gtk_container_set_border_width(GTK_CONTAINER(dialog), 6);
-  gtk_window_set_icon_name(GTK_WINDOW(dialog), "mate-session-properties");
-
-  g_object_set(dialog, "resizable", FALSE, NULL);
-
   gsm_util_dialog_add_button(GTK_DIALOG(dialog), _("_Cancel"), "process-stop",
                              GTK_RESPONSE_CANCEL);
 
@@ -178,42 +156,20 @@ static void setup_dialog(GsmAppDialog *dialog) {
                                GTK_RESPONSE_OK);
   }
 
-  dialog->name_entry = GET_WIDGET(CAPPLET_NAME_ENTRY_WIDGET_NAME);
-  g_signal_connect(dialog->name_entry, "activate",
-                   G_CALLBACK(on_entry_activate), dialog);
-  if (dialog->name != NULL) {
+  if (dialog->name != NULL)
     gtk_entry_set_text(GTK_ENTRY(dialog->name_entry), dialog->name);
-  }
 
-  g_signal_connect(GET_OBJECT(CAPPLET_BROWSE_WIDGET_NAME), "clicked",
-                   G_CALLBACK(on_browse_button_clicked), dialog);
-
-  dialog->command_entry = GET_WIDGET(CAPPLET_COMMAND_ENTRY_WIDGET_NAME);
-  g_signal_connect(dialog->command_entry, "activate",
-                   G_CALLBACK(on_entry_activate), dialog);
-  if (dialog->command != NULL) {
+  if (dialog->command != NULL)
     gtk_entry_set_text(GTK_ENTRY(dialog->command_entry), dialog->command);
-  }
 
-  dialog->comment_entry = GET_WIDGET(CAPPLET_COMMENT_ENTRY_WIDGET_NAME);
-  g_signal_connect(dialog->comment_entry, "activate",
-                   G_CALLBACK(on_entry_activate), dialog);
-  if (dialog->comment != NULL) {
+  if (dialog->comment != NULL)
     gtk_entry_set_text(GTK_ENTRY(dialog->comment_entry), dialog->comment);
-  }
 
-  dialog->delay_spin = GET_WIDGET(CAPPLET_DELAY_SPIN_WIDGET_NAME);
-  g_signal_connect(dialog->delay_spin, "output", G_CALLBACK(on_spin_output),
-                   dialog);
   if (dialog->delay > 0) {
     GtkAdjustment *adjustment;
     adjustment =
         gtk_spin_button_get_adjustment(GTK_SPIN_BUTTON(dialog->delay_spin));
     gtk_adjustment_set_value(adjustment, (gdouble)dialog->delay);
-  }
-
-  if (builder != NULL) {
-    g_object_unref(builder);
   }
 }
 
@@ -249,7 +205,6 @@ static void gsm_app_dialog_set_name(GsmAppDialog *dialog, const char *name) {
   g_return_if_fail(GSM_IS_APP_DIALOG(dialog));
 
   g_free(dialog->name);
-
   dialog->name = g_strdup(name);
   g_object_notify(G_OBJECT(dialog), "name");
 }
@@ -258,7 +213,6 @@ static void gsm_app_dialog_set_command(GsmAppDialog *dialog, const char *name) {
   g_return_if_fail(GSM_IS_APP_DIALOG(dialog));
 
   g_free(dialog->command);
-
   dialog->command = g_strdup(name);
   g_object_notify(G_OBJECT(dialog), "command");
 }
@@ -267,7 +221,6 @@ static void gsm_app_dialog_set_comment(GsmAppDialog *dialog, const char *name) {
   g_return_if_fail(GSM_IS_APP_DIALOG(dialog));
 
   g_free(dialog->comment);
-
   dialog->comment = g_strdup(name);
   g_object_notify(G_OBJECT(dialog), "comment");
 }
@@ -348,6 +301,7 @@ static void gsm_app_dialog_get_property(GObject *object, guint prop_id,
 
 static void gsm_app_dialog_class_init(GsmAppDialogClass *klass) {
   GObjectClass *object_class = G_OBJECT_CLASS(klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
   object_class->get_property = gsm_app_dialog_get_property;
   object_class->set_property = gsm_app_dialog_set_property;
@@ -370,18 +324,25 @@ static void gsm_app_dialog_class_init(GsmAppDialogClass *klass) {
       object_class, PROP_DELAY,
       g_param_spec_uint("delay", "delay", "delay", 0, 100, 0,
                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
+
+  gtk_widget_class_set_template_from_resource(widget_class, "/org/mate/session/detail.ui");
+  gtk_widget_class_bind_template_child (widget_class, GsmAppDialog, name_entry);
+  gtk_widget_class_bind_template_child (widget_class, GsmAppDialog, command_entry);
+  gtk_widget_class_bind_template_child (widget_class, GsmAppDialog, comment_entry);
+  gtk_widget_class_bind_template_child (widget_class, GsmAppDialog, delay_spin);
+  gtk_widget_class_bind_template_callback(widget_class, on_browse_button_clicked);
+  gtk_widget_class_bind_template_callback(widget_class, on_entry_activate);
+  gtk_widget_class_bind_template_callback(widget_class, on_spin_output);
 }
 
-static void gsm_app_dialog_init(GsmAppDialog *dialog) {}
+static void gsm_app_dialog_init(GsmAppDialog *dialog) {
+  gtk_widget_init_template (GTK_WIDGET (dialog));
+}
 
 GtkWidget *gsm_app_dialog_new(const char *name, const char *command,
                               const char *comment, guint delay) {
-  GObject *object;
-
-  object = g_object_new(GSM_TYPE_APP_DIALOG, "name", name, "command", command,
-                        "comment", comment, "delay", delay, NULL);
-
-  return GTK_WIDGET(object);
+  return g_object_new(GSM_TYPE_APP_DIALOG, "name", name, "command", command,
+                      "comment", comment, "delay", delay, NULL);
 }
 
 gboolean gsm_app_dialog_run(GsmAppDialog *dialog, char **name_p,
