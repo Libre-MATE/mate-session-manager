@@ -37,8 +37,6 @@ gchar *gsm_util_get_empty_tmp_session_dir(void);
 
 const char *gsm_util_get_saved_session_dir(void);
 
-gchar **gsm_util_get_app_dirs(void);
-
 gchar **gsm_util_get_autostart_dirs(void);
 
 gchar **gsm_util_get_desktop_dirs(void);

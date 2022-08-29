@@ -61,6 +61,27 @@ gchar **gsm_get_screen_locker_command(void) {
   return screen_locker_argv;
 }
 
+static char **gsm_util_get_app_dirs() {
+  GPtrArray *dirs;
+  const char *const *system_data_dirs;
+  int i;
+
+  dirs = g_ptr_array_new();
+
+  g_ptr_array_add(
+      dirs, g_build_filename(g_get_user_data_dir(), "applications", NULL));
+
+  system_data_dirs = g_get_system_data_dirs();
+  for (i = 0; system_data_dirs[i]; i++) {
+    g_ptr_array_add(
+        dirs, g_build_filename(system_data_dirs[i], "applications", NULL));
+  }
+
+  g_ptr_array_add(dirs, NULL);
+
+  return (char **)g_ptr_array_free(dirs, FALSE);
+}
+
 char *gsm_util_find_desktop_file_for_app_name(const char *name,
                                               char **autostart_dirs) {
   char *app_path;
@@ -222,27 +243,6 @@ char **gsm_util_get_autostart_dirs() {
   for (i = 0; system_config_dirs[i]; i++) {
     g_ptr_array_add(dirs,
                     g_build_filename(system_config_dirs[i], "autostart", NULL));
-  }
-
-  g_ptr_array_add(dirs, NULL);
-
-  return (char **)g_ptr_array_free(dirs, FALSE);
-}
-
-char **gsm_util_get_app_dirs() {
-  GPtrArray *dirs;
-  const char *const *system_data_dirs;
-  int i;
-
-  dirs = g_ptr_array_new();
-
-  g_ptr_array_add(
-      dirs, g_build_filename(g_get_user_data_dir(), "applications", NULL));
-
-  system_data_dirs = g_get_system_data_dirs();
-  for (i = 0; system_data_dirs[i]; i++) {
-    g_ptr_array_add(
-        dirs, g_build_filename(system_data_dirs[i], "applications", NULL));
   }
 
   g_ptr_array_add(dirs, NULL);
