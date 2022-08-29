@@ -88,28 +88,18 @@ static void on_browse_button_clicked(GtkWidget *widget, GsmAppDialog *dialog) {
       GTK_RESPONSE_CANCEL, "gtk-open", GTK_RESPONSE_ACCEPT, NULL);
 
   gtk_window_set_transient_for(GTK_WINDOW(chooser), GTK_WINDOW(dialog));
-
   gtk_window_set_destroy_with_parent(GTK_WINDOW(chooser), TRUE);
-
   gtk_window_set_title(GTK_WINDOW(chooser), _("Select Command"));
-
   gtk_widget_show(chooser);
 
   response = gtk_dialog_run(GTK_DIALOG(chooser));
-
   if (response == GTK_RESPONSE_ACCEPT) {
-    char *text;
-    char *uri;
+    g_autofree gchar *text = NULL;
+    g_autofree gchar *uri = NULL;
 
-    text = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
-
+    text =gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(chooser));
     uri = make_exec_uri(text);
-
-    g_free(text);
-
     gtk_entry_set_text(GTK_ENTRY(dialog->command_entry), uri);
-
-    g_free(uri);
   }
 
   gtk_widget_destroy(chooser);
@@ -121,7 +111,7 @@ static void on_entry_activate(GtkEntry *entry, GsmAppDialog *dialog) {
 
 static gboolean on_spin_output(GtkSpinButton *spin, GsmAppDialog *dialog) {
   GtkAdjustment *adjustment;
-  gchar *text;
+  g_autofree gchar *text = NULL;
   int value;
 
   adjustment = gtk_spin_button_get_adjustment(spin);
@@ -136,7 +126,6 @@ static gboolean on_spin_output(GtkSpinButton *spin, GsmAppDialog *dialog) {
     text = g_strdup_printf("%d", value);
 
   gtk_entry_set_text(GTK_ENTRY(spin), text);
-  g_free(text);
 
   return TRUE;
 }
@@ -359,32 +348,23 @@ gboolean gsm_app_dialog_run(GsmAppDialog *dialog, char **name_p,
   retval = FALSE;
 
   while (gtk_dialog_run(GTK_DIALOG(dialog)) == GTK_RESPONSE_OK) {
-    const char *name;
-    const char *exec;
-    const char *comment;
-    guint delay;
-    const char *error_msg;
-    GError *error;
-    char **argv;
+    const char *name = gsm_app_dialog_get_name(GSM_APP_DIALOG(dialog));
+    const char *exec = gsm_app_dialog_get_command(GSM_APP_DIALOG(dialog));
+    const char *comment = gsm_app_dialog_get_comment(GSM_APP_DIALOG(dialog));
+    guint delay = gsm_app_dialog_get_delay(GSM_APP_DIALOG(dialog));
+    const char *error_msg = NULL;
+    GError *error = NULL;
+    char **argv = NULL;
     int argc;
-
-    name = gsm_app_dialog_get_name(GSM_APP_DIALOG(dialog));
-    exec = gsm_app_dialog_get_command(GSM_APP_DIALOG(dialog));
-    comment = gsm_app_dialog_get_comment(GSM_APP_DIALOG(dialog));
-    delay = gsm_app_dialog_get_delay(GSM_APP_DIALOG(dialog));
-
-    error = NULL;
-    error_msg = NULL;
 
     if (gsm_util_text_is_blank(exec)) {
       error_msg = _("The startup command cannot be empty");
     } else {
       if (!g_shell_parse_argv(exec, &argc, &argv, &error)) {
-        if (error != NULL) {
+        if (error != NULL)
           error_msg = error->message;
-        } else {
+        else
           error_msg = _("The startup command is not valid");
-        }
       }
     }
 
@@ -395,38 +375,30 @@ gboolean gsm_app_dialog_run(GsmAppDialog *dialog, char **name_p,
                                       GTK_MESSAGE_ERROR, GTK_BUTTONS_CLOSE,
                                       "%s", error_msg);
 
-      if (error != NULL) {
+      if (error != NULL)
         g_error_free(error);
-      }
 
       gtk_dialog_run(GTK_DIALOG(msgbox));
-
       gtk_widget_destroy(msgbox);
-
       continue;
     }
 
-    if (gsm_util_text_is_blank(name)) {
+    if (gsm_util_text_is_blank(name))
       name = argv[0];
-    }
 
-    if (name_p) {
+    if (name_p)
       *name_p = g_strdup(name);
-    }
 
     g_strfreev(argv);
 
-    if (command_p) {
+    if (command_p)
       *command_p = g_strdup(exec);
-    }
 
-    if (comment_p) {
+    if (comment_p)
       *comment_p = g_strdup(comment);
-    }
 
-    if (delay_p) {
+    if (delay_p)
       *delay_p = delay;
-    }
 
     retval = TRUE;
     break;
