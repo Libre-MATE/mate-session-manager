@@ -34,20 +34,8 @@
 #include <gtk/gtk.h>
 
 #include "gsm-app-dialog.h"
-#include "gsm-util.h"
 #include "gsp-app-manager.h"
 #include "gsp-app.h"
-
-#define GET_OBJECT(x) (gtk_builder_get_object(dialog->builder, (x)))
-#define GET_WIDGET(x) (GTK_WIDGET(GET_OBJECT(x)))
-
-#define CAPPLET_TREEVIEW_WIDGET_NAME "session_properties_treeview"
-#define CAPPLET_ADD_WIDGET_NAME "session_properties_add_button"
-#define CAPPLET_DELETE_WIDGET_NAME "session_properties_delete_button"
-#define CAPPLET_EDIT_WIDGET_NAME "session_properties_edit_button"
-#define CAPPLET_SAVE_WIDGET_NAME "session_properties_save_button"
-#define CAPPLET_REMEMBER_WIDGET_NAME "session_properties_remember_toggle"
-#define CAPPLET_SHOW_HIDDEN_WIDGET_NAME "session_properties_show_hidden_toggle"
 
 #define STARTUP_APP_ICON "system-run"
 
@@ -57,17 +45,16 @@
 
 struct _GsmPropertiesDialog {
   GtkDialog parent;
-
   GtkBuilder *builder;
   GtkListStore *list_store;
   GtkTreeModel *tree_filter;
-
-  GtkTreeView *treeview;
+  GtkWidget *treeview;
+  GtkWidget *notebook;
   GtkWidget *delete_button;
   GtkWidget *edit_button;
-
+  GtkWidget *remember_toggle;
+  GtkWidget *show_hidden_toggle;
   GspAppManager *manager;
-
   GSettings *settings;
 };
 
@@ -328,7 +315,7 @@ static void on_delete_app_clicked(GtkWidget *widget,
   GtkTreeIter iter;
   GspApp *app;
 
-  selection = gtk_tree_view_get_selection(dialog->treeview);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(dialog->treeview));
 
   if (!gtk_tree_selection_get_selected(selection, NULL, &iter)) {
     return;
@@ -350,7 +337,7 @@ static void on_edit_app_clicked(GtkWidget *widget,
   GtkTreeIter iter;
   GspApp *app;
 
-  selection = gtk_tree_view_get_selection(dialog->treeview);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(dialog->treeview));
 
   if (!gtk_tree_selection_get_selected(selection, NULL, &iter)) {
     return;
@@ -391,7 +378,9 @@ static void on_row_activated(GtkTreeView *tree_view, GtkTreePath *path,
 static void on_show_hidden_toggled(GtkToggleButton *togglebutton,
                                    GsmPropertiesDialog *dialog) {
   (void)togglebutton;
-  gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(dialog->tree_filter));
+
+  if (dialog->tree_filter)
+    gtk_tree_model_filter_refilter(GTK_TREE_MODEL_FILTER(dialog->tree_filter));
 }
 
 static void on_save_session_clicked(GtkWidget *widget,
@@ -485,26 +474,16 @@ static gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
 }
 
 static void setup_dialog(GsmPropertiesDialog *dialog) {
-  GtkToggleButton *toggle_button;
   GtkTreeViewColumn *column;
   GtkCellRenderer *renderer;
   GtkTreeSelection *selection;
   GtkTargetList *targetlist;
 
-  gsm_util_dialog_add_button(GTK_DIALOG(dialog), _("_Help"), "help-browser",
-                             GTK_RESPONSE_HELP);
-
-  gsm_util_dialog_add_button(GTK_DIALOG(dialog), _("_Close"), "window-close",
-                             GTK_RESPONSE_CLOSE);
-
   dialog->settings = g_settings_new(SPC_CONFIG_SCHEMA);
 
-  toggle_button =
-      GTK_TOGGLE_BUTTON(GET_OBJECT(CAPPLET_SHOW_HIDDEN_WIDGET_NAME));
-  g_settings_bind(dialog->settings, SPC_SHOW_HIDDEN_KEY, toggle_button,
-                  "active", G_SETTINGS_BIND_DEFAULT);
-  g_signal_connect(toggle_button, "toggled", G_CALLBACK(on_show_hidden_toggled),
-                   dialog);
+  g_settings_bind(dialog->settings, SPC_SHOW_HIDDEN_KEY,
+                  dialog->show_hidden_toggle, "active",
+                  G_SETTINGS_BIND_DEFAULT);
 
   dialog->list_store =
       gtk_list_store_new(NUMBER_OF_COLUMNS, G_TYPE_BOOLEAN, G_TYPE_ICON,
@@ -514,19 +493,14 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
   g_object_unref(dialog->list_store);
 
   gtk_tree_model_filter_set_visible_func(
-      GTK_TREE_MODEL_FILTER(dialog->tree_filter), visible_func, toggle_button,
-      NULL);
+      GTK_TREE_MODEL_FILTER(dialog->tree_filter), visible_func,
+      dialog->show_hidden_toggle, NULL);
 
-  dialog->treeview = GTK_TREE_VIEW(GET_OBJECT(CAPPLET_TREEVIEW_WIDGET_NAME));
-
-  gtk_tree_view_set_model(dialog->treeview, dialog->tree_filter);
+  gtk_tree_view_set_model(GTK_TREE_VIEW(dialog->treeview), dialog->tree_filter);
   g_object_unref(dialog->tree_filter);
 
-  gtk_tree_view_set_headers_visible(dialog->treeview, FALSE);
-  g_signal_connect(dialog->treeview, "row-activated",
-                   G_CALLBACK(on_row_activated), dialog);
-
-  selection = gtk_tree_view_get_selection(dialog->treeview);
+  gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(dialog->treeview), FALSE);
+  selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(dialog->treeview));
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_BROWSE);
   g_signal_connect(selection, "changed", G_CALLBACK(on_selection_changed),
                    dialog);
@@ -535,7 +509,7 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
   renderer = gtk_cell_renderer_toggle_new();
   column = gtk_tree_view_column_new_with_attributes(
       _("Enabled"), renderer, "active", STORE_COL_ENABLED, NULL);
-  gtk_tree_view_append_column(dialog->treeview, column);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(dialog->treeview), column);
   g_signal_connect(renderer, "toggled", G_CALLBACK(on_startup_enabled_toggled),
                    dialog);
 
@@ -545,7 +519,7 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
       _("Icon"), renderer, "gicon", STORE_COL_GICON, "sensitive",
       STORE_COL_ENABLED, NULL);
   g_object_set(renderer, "stock-size", GSM_PROPERTIES_ICON_SIZE, NULL);
-  gtk_tree_view_append_column(dialog->treeview, column);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(dialog->treeview), column);
 
   /* NAME COLUMN */
   renderer = gtk_cell_renderer_text_new();
@@ -553,22 +527,23 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
       _("Program"), renderer, "markup", STORE_COL_DESCRIPTION, "sensitive",
       STORE_COL_ENABLED, NULL);
   g_object_set(renderer, "ellipsize", PANGO_ELLIPSIZE_END, NULL);
-  gtk_tree_view_append_column(dialog->treeview, column);
+  gtk_tree_view_append_column(GTK_TREE_VIEW(dialog->treeview), column);
 
   gtk_tree_view_column_set_sort_column_id(column, STORE_COL_DESCRIPTION);
-  gtk_tree_view_set_search_column(dialog->treeview, STORE_COL_SEARCH);
+  gtk_tree_view_set_search_column(GTK_TREE_VIEW(dialog->treeview),
+                                  STORE_COL_SEARCH);
 
-  gtk_tree_view_enable_model_drag_source(dialog->treeview,
+  gtk_tree_view_enable_model_drag_source(GTK_TREE_VIEW(dialog->treeview),
                                          GDK_BUTTON1_MASK | GDK_BUTTON2_MASK,
                                          NULL, 0, GDK_ACTION_COPY);
-  gtk_drag_source_add_uri_targets(GTK_WIDGET(dialog->treeview));
+  gtk_drag_source_add_uri_targets(dialog->treeview);
 
-  gtk_drag_dest_set(GTK_WIDGET(dialog->treeview), GTK_DEST_DEFAULT_ALL, NULL, 0,
+  gtk_drag_dest_set(dialog->treeview, GTK_DEST_DEFAULT_ALL, NULL, 0,
                     GDK_ACTION_COPY);
-  gtk_drag_dest_add_uri_targets(GTK_WIDGET(dialog->treeview));
+  gtk_drag_dest_add_uri_targets(dialog->treeview);
 
   /* we don't want to accept drags coming from this widget */
-  targetlist = gtk_drag_dest_get_target_list(GTK_WIDGET(dialog->treeview));
+  targetlist = gtk_drag_dest_get_target_list(dialog->treeview);
   if (targetlist != NULL) {
     GtkTargetEntry *targets;
     gint n_targets;
@@ -578,39 +553,17 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
     for (i = 0; i < n_targets; i++) targets[i].flags = GTK_TARGET_OTHER_WIDGET;
 
     targetlist = gtk_target_list_new(targets, (guint)n_targets);
-    gtk_drag_dest_set_target_list(GTK_WIDGET(dialog->treeview), targetlist);
+    gtk_drag_dest_set_target_list(dialog->treeview, targetlist);
     gtk_target_list_unref(targetlist);
     gtk_target_table_free(targets, n_targets);
   }
-
-  g_signal_connect(dialog->treeview, "drag_begin", G_CALLBACK(on_drag_begin),
-                   dialog);
-  g_signal_connect(dialog->treeview, "drag_data_get",
-                   G_CALLBACK(on_drag_data_get), dialog);
-  g_signal_connect(dialog->treeview, "drag_data_received",
-                   G_CALLBACK(on_drag_data_received), dialog);
 
   gtk_tree_sortable_set_sort_column_id(GTK_TREE_SORTABLE(dialog->list_store),
                                        STORE_COL_DESCRIPTION,
                                        GTK_SORT_ASCENDING);
 
-  g_signal_connect(GET_OBJECT(CAPPLET_ADD_WIDGET_NAME), "clicked",
-                   G_CALLBACK(on_add_app_clicked), dialog);
-
-  dialog->delete_button = GET_WIDGET(CAPPLET_DELETE_WIDGET_NAME);
-  g_signal_connect(dialog->delete_button, "clicked",
-                   G_CALLBACK(on_delete_app_clicked), dialog);
-
-  dialog->edit_button = GET_WIDGET(CAPPLET_EDIT_WIDGET_NAME);
-  g_signal_connect(dialog->edit_button, "clicked",
-                   G_CALLBACK(on_edit_app_clicked), dialog);
-
-  g_settings_bind(dialog->settings, SPC_AUTOSAVE_KEY,
-                  GET_OBJECT(CAPPLET_REMEMBER_WIDGET_NAME), "active",
-                  G_SETTINGS_BIND_DEFAULT);
-
-  g_signal_connect(GET_OBJECT(CAPPLET_SAVE_WIDGET_NAME), "clicked",
-                   G_CALLBACK(on_save_session_clicked), dialog);
+  g_settings_bind(dialog->settings, SPC_AUTOSAVE_KEY, dialog->remember_toggle,
+                  "active", G_SETTINGS_BIND_DEFAULT);
 
   dialog->manager = gsp_app_manager_get();
   gsp_app_manager_fill(dialog->manager);
@@ -658,32 +611,44 @@ static void gsm_properties_dialog_dispose(GObject *object) {
 
 static void gsm_properties_dialog_class_init(GsmPropertiesDialogClass *klass) {
   GObjectClass *object_class = G_OBJECT_CLASS(klass);
+  GtkWidgetClass *widget_class = GTK_WIDGET_CLASS(klass);
 
   object_class->constructor = gsm_properties_dialog_constructor;
   object_class->dispose = gsm_properties_dialog_dispose;
   object_class->finalize = gsm_properties_dialog_finalize;
+
+  gtk_widget_class_set_template_from_resource(
+      widget_class, "/org/mate/session/properties.ui");
+  gtk_widget_class_bind_template_child(widget_class, GsmPropertiesDialog,
+                                       treeview);
+  gtk_widget_class_bind_template_child(widget_class, GsmPropertiesDialog,
+                                       notebook);
+  gtk_widget_class_bind_template_child(widget_class, GsmPropertiesDialog,
+                                       delete_button);
+  gtk_widget_class_bind_template_child(widget_class, GsmPropertiesDialog,
+                                       edit_button);
+  gtk_widget_class_bind_template_child(widget_class, GsmPropertiesDialog,
+                                       show_hidden_toggle);
+  gtk_widget_class_bind_template_child(widget_class, GsmPropertiesDialog,
+                                       remember_toggle);
+  gtk_widget_class_bind_template_callback(widget_class, on_drag_begin);
+  gtk_widget_class_bind_template_callback(widget_class, on_drag_data_get);
+  gtk_widget_class_bind_template_callback(widget_class, on_drag_data_received);
+  gtk_widget_class_bind_template_callback(widget_class, on_row_activated);
+  gtk_widget_class_bind_template_callback(widget_class, on_add_app_clicked);
+  gtk_widget_class_bind_template_callback(widget_class, on_delete_app_clicked);
+  gtk_widget_class_bind_template_callback(widget_class, on_edit_app_clicked);
+  gtk_widget_class_bind_template_callback(widget_class, on_show_hidden_toggled);
+  gtk_widget_class_bind_template_callback(widget_class,
+                                          on_save_session_clicked);
 }
 
 static void gsm_properties_dialog_init(GsmPropertiesDialog *dialog) {
-  GtkWidget *content_area;
-  GObject *notebook;
+  gtk_widget_init_template(GTK_WIDGET(dialog));
 
-  dialog->builder =
-      gtk_builder_new_from_resource("/org/mate/session/properties.ui");
-
-  content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
-  notebook = GET_OBJECT("main-notebook");
-  gtk_widget_add_events(GTK_WIDGET(notebook), GDK_SCROLL_MASK);
-  g_signal_connect(notebook, "scroll-event",
+  gtk_widget_add_events(dialog->notebook, GDK_SCROLL_MASK);
+  g_signal_connect(dialog->notebook, "scroll-event",
                    G_CALLBACK(on_main_notebook_scroll_event), NULL);
-  gtk_box_pack_start(GTK_BOX(content_area), GTK_WIDGET(notebook), TRUE, TRUE, 0);
-
-  gtk_window_set_resizable(GTK_WINDOW(dialog), TRUE);
-  gtk_container_set_border_width(GTK_CONTAINER(dialog), 6);
-  gtk_box_set_spacing(GTK_BOX(content_area), 2);
-  gtk_window_set_icon_name(GTK_WINDOW(dialog), "mate-session-properties");
-  gtk_window_set_title(GTK_WINDOW(dialog),
-                       _("Startup Applications Preferences"));
 }
 
 static void gsm_properties_dialog_finalize(GObject *object) {
