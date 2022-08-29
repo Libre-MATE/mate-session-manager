@@ -154,7 +154,7 @@ static void setup_dialog(GsmAppDialog *dialog) {
   GtkWidget *content_area;
   GtkBuilder *builder;
 
-  builder = gtk_builder_new_from_resource("/org/mate/session/properties.ui");
+  builder = gtk_builder_new_from_resource("/org/mate/session/detail.ui");
 
   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   gtk_container_add(GTK_CONTAINER(content_area), GET_WIDGET("main-table"));

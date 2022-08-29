@@ -39,6 +39,7 @@ EXTRA_DIST =					\
 	$(ui_DATA)				\
 	$(desktop_in_files)			\
 	$(pixmap_DATA_dist)			\
+	detail.ui				\
 	mate-wm					\
 	org.mate.session.gresource.xml		\
 	properties.ui

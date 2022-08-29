@@ -18,5 +18,6 @@
 <gresources>
   <gresource prefix="/org/mate/session">
     <file compressed="true">properties.ui</file>
+    <file compressed="true">detail.ui</file>
   </gresource>
 </gresources>
