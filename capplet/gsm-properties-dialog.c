@@ -75,18 +75,15 @@ static gboolean find_by_app(GtkTreeModel *model, GtkTreeIter *iter,
                             GspApp *app) {
   GspApp *iter_app = NULL;
 
-  if (!gtk_tree_model_get_iter_first(model, iter)) {
+  if (!gtk_tree_model_get_iter_first(model, iter))
     return FALSE;
-  }
 
   do {
     gtk_tree_model_get(model, iter, STORE_COL_APP, &iter_app, -1);
-
     if (iter_app == app) {
       g_object_unref(iter_app);
       return TRUE;
     }
-
     g_object_unref(iter_app);
   } while (gtk_tree_model_iter_next(model, iter));
 
@@ -124,9 +121,8 @@ static void _fill_iter_from_app(GtkListStore *list_store, GtkTreeIter *iter,
     }
   }
 
-  if (icon == NULL) {
+  if (icon == NULL)
     icon = g_themed_icon_new(STARTUP_APP_ICON);
-  }
 
   gtk_list_store_set(list_store, iter, STORE_COL_ENABLED, enabled,
                      STORE_COL_GICON, icon, STORE_COL_DESCRIPTION, description,
@@ -137,22 +133,20 @@ static void _fill_iter_from_app(GtkListStore *list_store, GtkTreeIter *iter,
 static void _app_changed(GsmPropertiesDialog *dialog, GspApp *app) {
   GtkTreeIter iter;
 
-  if (!find_by_app(GTK_TREE_MODEL(dialog->list_store), &iter, app)) {
+  if (!find_by_app(GTK_TREE_MODEL(dialog->list_store), &iter, app))
     return;
-  }
 
   _fill_iter_from_app(dialog->list_store, &iter, app);
 }
 
 static void append_app(GsmPropertiesDialog *dialog, GspApp *app) {
   GtkTreeIter iter;
-  if (find_by_app(GTK_TREE_MODEL(dialog->list_store), &iter, app)) {
+
+  if (find_by_app(GTK_TREE_MODEL(dialog->list_store), &iter, app))
     return;
-  }
 
   gtk_list_store_append(dialog->list_store, &iter);
   _fill_iter_from_app(dialog->list_store, &iter, app);
-
   g_signal_connect_swapped(app, "changed", G_CALLBACK(_app_changed), dialog);
 }
 
@@ -165,9 +159,8 @@ static void _app_added(GsmPropertiesDialog *dialog, GspApp *app,
 static void remove_app(GsmPropertiesDialog *dialog, GspApp *app) {
   GtkTreeIter iter;
 
-  if (!find_by_app(GTK_TREE_MODEL(dialog->list_store), &iter, app)) {
+  if (!find_by_app(GTK_TREE_MODEL(dialog->list_store), &iter, app))
     return;
-  }
 
   g_signal_handlers_disconnect_by_func(app, _app_changed, dialog);
   gtk_list_store_remove(dialog->list_store, &iter);
@@ -184,17 +177,14 @@ static void populate_model(GsmPropertiesDialog *dialog) {
   GSList *l;
 
   apps = gsp_app_manager_get_apps(dialog->manager);
-  for (l = apps; l != NULL; l = l->next) {
+  for (l = apps; l != NULL; l = l->next)
     append_app(dialog, GSP_APP(l->data));
-  }
   g_slist_free(apps);
 }
 
 static void on_selection_changed(GtkTreeSelection *selection,
                                  GsmPropertiesDialog *dialog) {
-  gboolean sel;
-
-  sel = gtk_tree_selection_get_selected(selection, NULL, NULL);
+  gboolean sel = gtk_tree_selection_get_selected(selection, NULL, NULL);
 
   gtk_widget_set_sensitive(dialog->edit_button, sel);
   gtk_widget_set_sensitive(dialog->delete_button, sel);
@@ -204,22 +194,18 @@ static void on_startup_enabled_toggled(GtkCellRendererToggle *cell_renderer,
                                        char *path,
                                        GsmPropertiesDialog *dialog) {
   GtkTreeIter iter;
-  GspApp *app;
-  gboolean active;
+  GspApp *app = NULL;
 
   if (!gtk_tree_model_get_iter_from_string(GTK_TREE_MODEL(dialog->tree_filter),
                                            &iter, path)) {
     return;
   }
 
-  app = NULL;
   gtk_tree_model_get(GTK_TREE_MODEL(dialog->tree_filter), &iter, STORE_COL_APP,
                      &app, -1);
 
-  active = gtk_cell_renderer_toggle_get_active(cell_renderer);
-
   if (app) {
-    gsp_app_set_hidden(app, active);
+    gsp_app_set_hidden(app, gtk_cell_renderer_toggle_get_active(cell_renderer));
     g_object_unref(app);
   }
 }
@@ -228,26 +214,21 @@ static void on_drag_data_received(GtkWidget *widget,
                                   GdkDragContext *drag_context, gint x, gint y,
                                   GtkSelectionData *data, guint info,
                                   guint time, GsmPropertiesDialog *dialog) {
-  gboolean dnd_success;
-
-  dnd_success = FALSE;
+  gboolean dnd_success = FALSE;
 
   if (data != NULL) {
     char **filenames;
     int i;
 
     filenames = gtk_selection_data_get_uris(data);
-
     for (i = 0; filenames[i] && filenames[i][0]; i++) {
       /* Return success if at least one file succeeded */
       gboolean file_success;
       file_success = gsp_app_copy_desktop_file(filenames[i]);
       dnd_success = dnd_success || file_success;
     }
-
     g_strfreev(filenames);
   }
-
   gtk_drag_finish(drag_context, dnd_success, FALSE, time);
   g_signal_stop_emission_by_name(widget, "drag_data_received");
 }
@@ -280,9 +261,7 @@ static void on_drag_data_get(GtkWidget *widget, GdkDragContext *context,
   app = g_object_get_data(G_OBJECT(context), "gsp-app");
   if (app) {
     const char *uris[2];
-    char *uri;
-
-    uri = g_filename_to_uri(gsp_app_get_path(app), NULL, NULL);
+    char *uri = g_filename_to_uri(gsp_app_get_path(app), NULL, NULL);
 
     uris[0] = uri;
     uris[1] = NULL;
@@ -313,15 +292,13 @@ static void on_delete_app_clicked(GtkWidget *widget,
                                   GsmPropertiesDialog *dialog) {
   GtkTreeSelection *selection;
   GtkTreeIter iter;
-  GspApp *app;
+  GspApp *app = NULL;
 
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(dialog->treeview));
 
-  if (!gtk_tree_selection_get_selected(selection, NULL, &iter)) {
+  if (!gtk_tree_selection_get_selected(selection, NULL, &iter))
     return;
-  }
 
-  app = NULL;
   gtk_tree_model_get(GTK_TREE_MODEL(dialog->tree_filter), &iter, STORE_COL_APP,
                      &app, -1);
 
@@ -335,15 +312,13 @@ static void on_edit_app_clicked(GtkWidget *widget,
                                 GsmPropertiesDialog *dialog) {
   GtkTreeSelection *selection;
   GtkTreeIter iter;
-  GspApp *app;
+  GspApp *app = NULL;
 
   selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(dialog->treeview));
 
-  if (!gtk_tree_selection_get_selected(selection, NULL, &iter)) {
+  if (!gtk_tree_selection_get_selected(selection, NULL, &iter))
     return;
-  }
 
-  app = NULL;
   gtk_tree_model_get(GTK_TREE_MODEL(dialog->tree_filter), &iter, STORE_COL_APP,
                      &app, -1);
 
@@ -364,7 +339,6 @@ static void on_edit_app_clicked(GtkWidget *widget,
       g_free(exec);
       g_free(comment);
     }
-
     g_object_unref(app);
   }
 }
@@ -457,9 +431,7 @@ static gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
   gboolean show_hidden;
 
   show_hidden = gtk_toggle_button_get_active(toggle_button);
-
   gtk_tree_model_get(model, iter, STORE_COL_APP, &app, -1);
-
   if (app) {
     gboolean nodisplay;
 
@@ -469,7 +441,6 @@ static gboolean visible_func(GtkTreeModel *model, GtkTreeIter *iter,
   } else {
     visible = show_hidden;
   }
-
   return visible;
 }
 
@@ -658,10 +629,6 @@ static void gsm_properties_dialog_finalize(GObject *object) {
   G_OBJECT_CLASS(gsm_properties_dialog_parent_class)->finalize(object);
 }
 
-GtkWidget *gsm_properties_dialog_new(void) {
-  GObject *object;
-
-  object = g_object_new(GSM_TYPE_PROPERTIES_DIALOG, NULL);
-
-  return GTK_WIDGET(object);
+GsmPropertiesDialog *gsm_properties_dialog_new(void) {
+  return g_object_new(GSM_TYPE_PROPERTIES_DIALOG, NULL);
 }

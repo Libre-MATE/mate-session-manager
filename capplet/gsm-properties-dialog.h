@@ -32,7 +32,7 @@ G_BEGIN_DECLS
 G_DECLARE_FINAL_TYPE(GsmPropertiesDialog, gsm_properties_dialog, GSM,
                      PROPERTIES_DIALOG, GtkDialog)
 
-GtkWidget* gsm_properties_dialog_new(void);
+GsmPropertiesDialog* gsm_properties_dialog_new(void);
 
 #define GSM_PROPERTIES_ICON_SIZE GTK_ICON_SIZE_LARGE_TOOLBAR
 

@@ -66,9 +66,9 @@ static void dialog_response(GsmPropertiesDialog* dialog, guint response_id,
   }
 }
 
-int main(int argc, char* argv[]) {
-  GError* error;
-  GtkWidget* dialog;
+int main(int argc, char *argv[]) {
+  GError *error;
+  GsmPropertiesDialog *dialog;
 
 #ifdef ENABLE_NLS
   bindtextdomain(GETTEXT_PACKAGE, LOCALE_DIR);
@@ -92,7 +92,7 @@ int main(int argc, char* argv[]) {
 
   dialog = gsm_properties_dialog_new();
   g_signal_connect(dialog, "response", G_CALLBACK(dialog_response), NULL);
-  gtk_widget_show(dialog);
+  gtk_widget_show(GTK_WIDGET(dialog));
 
   gtk_main();
 
