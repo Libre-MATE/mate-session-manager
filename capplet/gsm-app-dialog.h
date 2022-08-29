@@ -31,8 +31,9 @@ G_BEGIN_DECLS
 #define GSM_TYPE_APP_DIALOG (gsm_app_dialog_get_type())
 G_DECLARE_FINAL_TYPE(GsmAppDialog, gsm_app_dialog, GSM, APP_DIALOG, GtkDialog)
 
-GtkWidget *gsm_app_dialog_new(const char *name, const char *command,
-                              const char *comment, guint delay);
+GtkWidget *gsm_app_dialog_new(GtkWindow *win, const char *name,
+                              const char *command, const char *comment,
+                              guint delay);
 
 gboolean gsm_app_dialog_run(GsmAppDialog *dialog, char **name_p,
                             char **command_p, char **comment_p, guint *delay);

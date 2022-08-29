@@ -325,24 +325,30 @@ static void gsm_app_dialog_class_init(GsmAppDialogClass *klass) {
       g_param_spec_uint("delay", "delay", "delay", 0, 100, 0,
                         G_PARAM_READWRITE | G_PARAM_CONSTRUCT));
 
-  gtk_widget_class_set_template_from_resource(widget_class, "/org/mate/session/detail.ui");
-  gtk_widget_class_bind_template_child (widget_class, GsmAppDialog, name_entry);
-  gtk_widget_class_bind_template_child (widget_class, GsmAppDialog, command_entry);
-  gtk_widget_class_bind_template_child (widget_class, GsmAppDialog, comment_entry);
-  gtk_widget_class_bind_template_child (widget_class, GsmAppDialog, delay_spin);
-  gtk_widget_class_bind_template_callback(widget_class, on_browse_button_clicked);
+  gtk_widget_class_set_template_from_resource(widget_class,
+                                              "/org/mate/session/detail.ui");
+  gtk_widget_class_bind_template_child(widget_class, GsmAppDialog, name_entry);
+  gtk_widget_class_bind_template_child(widget_class, GsmAppDialog,
+                                       command_entry);
+  gtk_widget_class_bind_template_child(widget_class, GsmAppDialog,
+                                       comment_entry);
+  gtk_widget_class_bind_template_child(widget_class, GsmAppDialog, delay_spin);
+  gtk_widget_class_bind_template_callback(widget_class,
+                                          on_browse_button_clicked);
   gtk_widget_class_bind_template_callback(widget_class, on_entry_activate);
   gtk_widget_class_bind_template_callback(widget_class, on_spin_output);
 }
 
 static void gsm_app_dialog_init(GsmAppDialog *dialog) {
-  gtk_widget_init_template (GTK_WIDGET (dialog));
+  gtk_widget_init_template(GTK_WIDGET(dialog));
 }
 
-GtkWidget *gsm_app_dialog_new(const char *name, const char *command,
-                              const char *comment, guint delay) {
-  return g_object_new(GSM_TYPE_APP_DIALOG, "name", name, "command", command,
-                      "comment", comment, "delay", delay, NULL);
+GtkWidget *gsm_app_dialog_new(GtkWindow *win, const char *name,
+                              const char *command, const char *comment,
+                              guint delay) {
+  return g_object_new(GSM_TYPE_APP_DIALOG, "transient-for", win, "name", name,
+                      "command", command, "comment", comment, "delay", delay,
+                      NULL);
 }
 
 gboolean gsm_app_dialog_run(GsmAppDialog *dialog, char **name_p,

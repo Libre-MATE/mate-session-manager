@@ -39,7 +39,7 @@
 #include "gsp-app.h"
 
 #define GET_OBJECT(x) (gtk_builder_get_object(dialog->builder, (x)))
-#define GET_WIDGET(x) (GTK_WIDGET(GET_OBJECT (x)))
+#define GET_WIDGET(x) (GTK_WIDGET(GET_OBJECT(x)))
 
 #define CAPPLET_TREEVIEW_WIDGET_NAME "session_properties_treeview"
 #define CAPPLET_ADD_WIDGET_NAME "session_properties_add_button"
@@ -312,9 +312,7 @@ static void on_add_app_clicked(GtkWidget *widget, GsmPropertiesDialog *dialog) {
   char *comment;
   guint delay;
 
-  add_dialog = gsm_app_dialog_new(NULL, NULL, NULL, 0);
-  gtk_window_set_transient_for(GTK_WINDOW(add_dialog), GTK_WINDOW(dialog));
-
+  add_dialog = gsm_app_dialog_new(GTK_WINDOW(dialog), NULL, NULL, NULL, 0);
   if (gsm_app_dialog_run(GSM_APP_DIALOG(add_dialog), &name, &exec, &comment,
                          &delay)) {
     gsp_app_create(name, comment, exec, delay);
@@ -369,11 +367,9 @@ static void on_edit_app_clicked(GtkWidget *widget,
     char *comment;
     guint delay;
 
-    edit_dialog =
-        gsm_app_dialog_new(gsp_app_get_name(app), gsp_app_get_exec(app),
-                           gsp_app_get_comment(app), gsp_app_get_delay(app));
-    gtk_window_set_transient_for(GTK_WINDOW(edit_dialog), GTK_WINDOW(dialog));
-
+    edit_dialog = gsm_app_dialog_new(
+        GTK_WINDOW(dialog), gsp_app_get_name(app), gsp_app_get_exec(app),
+        gsp_app_get_comment(app), gsp_app_get_delay(app));
     if (gsm_app_dialog_run(GSM_APP_DIALOG(edit_dialog), &name, &exec, &comment,
                            &delay)) {
       gsp_app_update(app, name, comment, exec, delay);
@@ -503,7 +499,8 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
 
   dialog->settings = g_settings_new(SPC_CONFIG_SCHEMA);
 
-  toggle_button = GTK_TOGGLE_BUTTON(GET_OBJECT(CAPPLET_SHOW_HIDDEN_WIDGET_NAME));
+  toggle_button =
+      GTK_TOGGLE_BUTTON(GET_OBJECT(CAPPLET_SHOW_HIDDEN_WIDGET_NAME));
   g_settings_bind(dialog->settings, SPC_SHOW_HIDDEN_KEY, toggle_button,
                   "active", G_SETTINGS_BIND_DEFAULT);
   g_signal_connect(toggle_button, "toggled", G_CALLBACK(on_show_hidden_toggled),
@@ -516,8 +513,9 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
       gtk_tree_model_filter_new(GTK_TREE_MODEL(dialog->list_store), NULL);
   g_object_unref(dialog->list_store);
 
-  gtk_tree_model_filter_set_visible_func(GTK_TREE_MODEL_FILTER(dialog->tree_filter),
-                                         visible_func, toggle_button, NULL);
+  gtk_tree_model_filter_set_visible_func(
+      GTK_TREE_MODEL_FILTER(dialog->tree_filter), visible_func, toggle_button,
+      NULL);
 
   dialog->treeview = GTK_TREE_VIEW(GET_OBJECT(CAPPLET_TREEVIEW_WIDGET_NAME));
 
@@ -560,8 +558,9 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
   gtk_tree_view_column_set_sort_column_id(column, STORE_COL_DESCRIPTION);
   gtk_tree_view_set_search_column(dialog->treeview, STORE_COL_SEARCH);
 
-  gtk_tree_view_enable_model_drag_source(
-      dialog->treeview, GDK_BUTTON1_MASK | GDK_BUTTON2_MASK, NULL, 0, GDK_ACTION_COPY);
+  gtk_tree_view_enable_model_drag_source(dialog->treeview,
+                                         GDK_BUTTON1_MASK | GDK_BUTTON2_MASK,
+                                         NULL, 0, GDK_ACTION_COPY);
   gtk_drag_source_add_uri_targets(GTK_WIDGET(dialog->treeview));
 
   gtk_drag_dest_set(GTK_WIDGET(dialog->treeview), GTK_DEST_DEFAULT_ALL, NULL, 0,
@@ -584,8 +583,8 @@ static void setup_dialog(GsmPropertiesDialog *dialog) {
     gtk_target_table_free(targets, n_targets);
   }
 
-  g_signal_connect(dialog->treeview, "drag_begin",
-                   G_CALLBACK(on_drag_begin), dialog);
+  g_signal_connect(dialog->treeview, "drag_begin", G_CALLBACK(on_drag_begin),
+                   dialog);
   g_signal_connect(dialog->treeview, "drag_data_get",
                    G_CALLBACK(on_drag_data_get), dialog);
   g_signal_connect(dialog->treeview, "drag_data_received",
@@ -646,15 +645,15 @@ static void gsm_properties_dialog_dispose(GObject *object) {
 
   dialog = GSM_PROPERTIES_DIALOG(object);
 
-  g_clear_object (&dialog->builder);
-  g_clear_object (&dialog->settings);
+  g_clear_object(&dialog->builder);
+  g_clear_object(&dialog->settings);
 
   G_OBJECT_CLASS(gsm_properties_dialog_parent_class)->dispose(object);
 
   /* it's important to do this after chaining to the parent dispose
    * method because we want to make sure the treeview has been disposed
    * and removed all its references to GspApp objects */
-  g_clear_object (&dialog->manager);
+  g_clear_object(&dialog->manager);
 }
 
 static void gsm_properties_dialog_class_init(GsmPropertiesDialogClass *klass) {
@@ -669,7 +668,8 @@ static void gsm_properties_dialog_init(GsmPropertiesDialog *dialog) {
   GtkWidget *content_area;
   GObject *notebook;
 
-  dialog->builder = gtk_builder_new_from_resource("/org/mate/session/properties.ui");
+  dialog->builder =
+      gtk_builder_new_from_resource("/org/mate/session/properties.ui");
 
   content_area = gtk_dialog_get_content_area(GTK_DIALOG(dialog));
   notebook = GET_OBJECT("main-notebook");
