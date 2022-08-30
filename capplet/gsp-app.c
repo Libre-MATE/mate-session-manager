@@ -58,7 +58,7 @@ typedef struct {
   char *exec;
   char *comment;
   char *icon;
-  gint delay;
+  guint delay;
 
   GIcon *gicon;
   char *description;
