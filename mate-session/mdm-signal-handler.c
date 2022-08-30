@@ -94,41 +94,35 @@ static void block_signals_pop(void) {
 static gboolean signal_io_watch(GIOChannel* ioc, GIOCondition condition,
                                 MdmSignalHandler* handler) {
   char buf[256];
-  gboolean is_fatal;
+  gboolean is_fatal = FALSE;;
   gsize bytes_read;
-  int i;
+  gsize i;
 
   block_signals_push();
 
   g_io_channel_read_chars(ioc, buf, sizeof(buf), &bytes_read, NULL);
-
-  is_fatal = FALSE;
-
   for (i = 0; i < bytes_read; i++) {
     int signum;
     GSList* handlers;
     GSList* l;
 
     signum = (gint32)buf[i];
-
     g_debug("MdmSignalHandler: handling signal %d", signum);
-    handlers = g_hash_table_lookup(handler->lookup, GINT_TO_POINTER(signum));
 
+    handlers = g_hash_table_lookup(handler->lookup, GINT_TO_POINTER(signum));
     g_debug("MdmSignalHandler: Found %u callbacks", g_slist_length(handlers));
 
     for (l = handlers; l != NULL; l = l->next) {
-      gboolean res;
       CallbackData* data;
 
       data = g_hash_table_lookup(handler->id_lookup, l->data);
-
       if (data != NULL) {
         if (data->func != NULL) {
+          gboolean res;
+
           g_debug("MdmSignalHandler: running %d handler: %p", signum,
                   data->func);
-
           res = data->func(signum, data->data);
-
           if (!res) {
             is_fatal = TRUE;
           }
