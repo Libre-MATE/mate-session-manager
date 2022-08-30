@@ -38,7 +38,7 @@ static GOptionEntry options[] = {
      N_("Version of this application"), NULL},
     {NULL, 0, 0, 0, NULL, NULL, NULL}};
 
-static void dialog_response(GsmPropertiesDialog* dialog, guint response_id,
+static void dialog_response(GsmPropertiesDialog* dialog, gint response_id,
                             gpointer data) {
   GError* error;
 
