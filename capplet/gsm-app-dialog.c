@@ -112,18 +112,18 @@ static void on_entry_activate(GtkEntry *entry, GsmAppDialog *dialog) {
 static gboolean on_spin_output(GtkSpinButton *spin, GsmAppDialog *dialog) {
   GtkAdjustment *adjustment;
   g_autofree gchar *text = NULL;
-  int value;
+  gdouble value;
 
   adjustment = gtk_spin_button_get_adjustment(spin);
   value = gtk_adjustment_get_value(adjustment);
-  dialog->delay = value;
+  dialog->delay = (guint)value;
 
-  if (value == 1)
-    text = g_strdup_printf("%d %s", value, _("second"));
-  else if (value > 1)
-    text = g_strdup_printf("%d %s", value, _("seconds"));
+  if (dialog->delay == 1)
+    text = g_strdup_printf("%u %s", dialog->delay, _("second"));
+  else if (dialog->delay > 1)
+    text = g_strdup_printf("%u %s", dialog->delay, _("seconds"));
   else
-    text = g_strdup_printf("%d", value);
+    text = g_strdup_printf("%u", dialog->delay);
 
   gtk_entry_set_text(GTK_ENTRY(spin), text);
 
