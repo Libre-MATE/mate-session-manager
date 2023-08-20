@@ -726,10 +726,6 @@ int main(int argc, char** argv) {
     g_object_unref(manager);
   }
 
-  if (gl_renderer != NULL) {
-    g_free(gl_renderer);
-  }
-
   if (client_store != NULL) {
     g_object_unref(client_store);
   }
